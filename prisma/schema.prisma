@@ -1,0 +1,478 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// MULTI-TENANT & USER MANAGEMENT
+// ============================================
+
+model Business {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  address     String?
+  website     String?
+  industry    String?
+  timezone    String   @default("UTC")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  users           User[]
+  agents          Agent[]
+  phoneNumbers    PhoneNumber[]
+  calls           Call[]
+  integrations    Integration[]
+  webhooks        Webhook[]
+  apiKeys         ApiKey[]
+  usageBilling    UsageBilling[]
+  subscriptions   Subscription[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String
+  role          UserRole  @default(USER)
+  isActive      Boolean   @default(true)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  businessId    String
+  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  ADMIN
+  OWNER
+  MANAGER
+  USER
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  plan        String   // free, starter, professional, enterprise
+  status      String   @default("active") // active, cancelled, past_due
+  startDate   DateTime @default(now())
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model UsageBilling {
+  id            String   @id @default(cuid())
+  month         DateTime
+  callMinutes   Int      @default(0)
+  aiTokens      Int      @default(0)
+  smsCount      Int      @default(0)
+  totalAmount   Float    @default(0)
+  isPaid        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// AGENT CONFIGURATION
+// ============================================
+
+model Agent {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  isActive        Boolean  @default(true)
+
+  // Voice Settings
+  voiceId         String?
+  voiceName       String   @default("Default")
+  voiceProvider   String   @default("system") // system, elevenlabs, azure, google
+  voiceSpeed      Float    @default(1.0)
+  voicePitch      Float    @default(1.0)
+
+  // Personality Settings
+  personalityType String   @default("professional") // professional, friendly, casual, formal
+  greeting        String   @default("Hello! How can I help you today?")
+  fallbackMessage String   @default("I'm sorry, I didn't understand that. Could you please repeat?")
+  transferMessage String   @default("Let me transfer you to a human agent.")
+
+  // AI Settings
+  aiModel         String   @default("gpt-4")
+  temperature     Float    @default(0.7)
+  maxTokens       Int      @default(150)
+
+  // Language Settings
+  primaryLanguage String   @default("en")
+  supportedLanguages String[] @default(["en"])
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  // Relations
+  scripts         Script[]
+  responses       ResponseLibrary[]
+  callFlows       CallFlow[]
+  phoneNumbers    PhoneNumber[]
+  calls           Call[]
+}
+
+model Voice {
+  id          String   @id @default(cuid())
+  name        String
+  provider    String   // system, elevenlabs, azure, google
+  voiceId     String   // external voice ID
+  language    String   @default("en")
+  gender      String   // male, female, neutral
+  description String?
+  sampleUrl   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Script {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  content     String   @db.Text
+  category    String?
+  tags        String[]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agentId     String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model ResponseLibrary {
+  id          String   @id @default(cuid())
+  trigger     String   // keyword or phrase that triggers this response
+  response    String   @db.Text
+  category    String?
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agentId     String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+}
+
+model CallFlow {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  flowData    Json     // JSON representation of call flow
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agentId     String
+  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  nodes       CallFlowNode[]
+}
+
+model CallFlowNode {
+  id          String   @id @default(cuid())
+  type        String   // greeting, menu, input, transfer, voicemail, hangup
+  name        String
+  content     String?  @db.Text
+  position    Json     // {x, y} position in designer
+  config      Json?    // node-specific configuration
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  callFlowId  String
+  callFlow    CallFlow @relation(fields: [callFlowId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// PHONE SYSTEM
+// ============================================
+
+model PhoneNumber {
+  id              String   @id @default(cuid())
+  number          String   @unique
+  displayName     String?
+  country         String   @default("US")
+  type            String   @default("local") // local, tollfree, mobile
+  provider        String   @default("twilio")
+  providerId      String?  // external ID from provider
+  status          String   @default("active") // active, suspended, pending
+  monthlyFee      Float    @default(0)
+
+  // Call handling
+  callHandling    String   @default("agent") // agent, forward, voicemail
+  forwardTo       String?
+  voicemailEnabled Boolean @default(true)
+  recordingEnabled Boolean @default(true)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  agentId         String?
+  agent           Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  // Relations
+  calls           Call[]
+  routingRules    CallRoutingRule[]
+}
+
+model CallRoutingRule {
+  id              String   @id @default(cuid())
+  name            String
+  priority        Int      @default(0)
+  condition       String   // time-based, caller-id, etc.
+  conditionValue  Json     // condition configuration
+  action          String   // forward, voicemail, agent, hangup
+  actionValue     String?  // destination for action
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  phoneNumberId   String
+  phoneNumber     PhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
+}
+
+model Call {
+  id              String   @id @default(cuid())
+  callSid         String?  @unique // Twilio call SID
+  direction       String   // inbound, outbound
+  status          String   // queued, ringing, in-progress, completed, failed, busy, no-answer
+  from            String
+  to              String
+  startTime       DateTime @default(now())
+  endTime         DateTime?
+  duration        Int?     // in seconds
+
+  // Recording
+  recordingUrl    String?
+  recordingSid    String?
+
+  // Transcription
+  transcription   String?  @db.Text
+
+  // AI Analysis
+  sentiment       String?  // positive, negative, neutral
+  sentimentScore  Float?
+  intent          String?
+  entities        Json?
+  summary         String?  @db.Text
+
+  // Call outcome
+  outcome         String?  // resolved, transferred, voicemail, abandoned
+  resolution      String?
+  wasTransferred  Boolean  @default(false)
+  transferredTo   String?
+
+  // Voicemail
+  hasVoicemail    Boolean  @default(false)
+  voicemailUrl    String?
+  voicemailTranscription String? @db.Text
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  phoneNumberId   String?
+  phoneNumber     PhoneNumber? @relation(fields: [phoneNumberId], references: [id], onDelete: SetNull)
+
+  agentId         String?
+  agent           Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  // Relations
+  messages        CallMessage[]
+  events          CallEvent[]
+}
+
+model CallMessage {
+  id          String   @id @default(cuid())
+  role        String   // user, assistant, system
+  content     String   @db.Text
+  timestamp   DateTime @default(now())
+
+  callId      String
+  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+}
+
+model CallEvent {
+  id          String   @id @default(cuid())
+  type        String   // ringing, answered, hold, resume, transfer, hangup
+  data        Json?
+  timestamp   DateTime @default(now())
+
+  callId      String
+  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// INTEGRATIONS
+// ============================================
+
+model Integration {
+  id              String   @id @default(cuid())
+  type            String   // calendar, crm, booking, payment, sms
+  provider        String   // google, outlook, salesforce, hubspot, stripe, etc.
+  name            String
+  config          Json     // encrypted configuration
+  credentials     Json?    // encrypted credentials
+  isActive        Boolean  @default(true)
+  lastSyncAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+model Webhook {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  events      String[] // call.started, call.ended, call.transferred, etc.
+  secret      String?
+  isActive    Boolean  @default(true)
+  lastTriggeredAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  logs        WebhookLog[]
+}
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  event       String
+  payload     Json
+  response    Json?
+  statusCode  Int?
+  success     Boolean
+  error       String?
+  createdAt   DateTime @default(now())
+
+  webhookId   String
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id          String   @id @default(cuid())
+  name        String
+  key         String   @unique
+  prefix      String   // first 8 chars for display
+  scopes      String[] // read, write, admin
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// ANALYTICS
+// ============================================
+
+model DailyAnalytics {
+  id              String   @id @default(cuid())
+  date            DateTime
+  businessId      String
+
+  // Call metrics
+  totalCalls      Int      @default(0)
+  inboundCalls    Int      @default(0)
+  outboundCalls   Int      @default(0)
+  answeredCalls   Int      @default(0)
+  missedCalls     Int      @default(0)
+  avgDuration     Float    @default(0)
+  totalDuration   Int      @default(0)
+
+  // Resolution metrics
+  resolvedCalls   Int      @default(0)
+  transferredCalls Int     @default(0)
+  voicemailCalls  Int      @default(0)
+  abandonedCalls  Int      @default(0)
+
+  // Sentiment metrics
+  positiveSentiment Int    @default(0)
+  negativeSentiment Int    @default(0)
+  neutralSentiment  Int    @default(0)
+  avgSentimentScore Float  @default(0)
+
+  // Conversion metrics
+  conversions     Int      @default(0)
+  conversionRate  Float    @default(0)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([date, businessId])
+}
+
+// ============================================
+// AI LEARNING & IMPROVEMENTS
+// ============================================
+
+model ConversationFeedback {
+  id          String   @id @default(cuid())
+  callId      String
+  rating      Int      // 1-5
+  feedback    String?  @db.Text
+  category    String?  // accuracy, helpfulness, naturalness
+  createdAt   DateTime @default(now())
+}
+
+model AiTrainingData {
+  id          String   @id @default(cuid())
+  input       String   @db.Text
+  output      String   @db.Text
+  context     String?  @db.Text
+  category    String?
+  isApproved  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// SYSTEM CONFIGURATION
+// ============================================
+
+model SystemSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       Json
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
