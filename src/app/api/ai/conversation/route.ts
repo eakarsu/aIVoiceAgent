@@ -53,7 +53,7 @@ export async function POST(request: Request) {
           greeting: "Hello! How can I help you today?",
           fallbackMessage: "I'm sorry, I didn't understand that. Could you please repeat?",
           temperature: 0.7,
-          maxTokens: 150,
+          maxTokens: 10000,
         },
       },
       message

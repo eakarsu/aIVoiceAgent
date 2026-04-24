@@ -476,3 +476,149 @@ model SystemSetting {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ============================================
+// AI FEATURES
+// ============================================
+
+model SpeechEnhancement {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  originalText    String   @db.Text
+  enhancedText    String?  @db.Text
+  enhancementType String   @default("clarity") // clarity, grammar, fluency, professional, casual
+  status          String   @default("pending") // pending, processing, completed, failed
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+model AccentAdaptation {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  originalText    String   @db.Text
+  adaptedText     String?  @db.Text
+  sourceAccent    String   @default("neutral")
+  targetAccent    String   @default("american") // american, british, australian, indian, etc.
+  status          String   @default("pending")
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+model IntentClassification {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  inputText       String   @db.Text
+  detectedIntent  String?
+  confidence      Float?
+  entities        Json?
+  status          String   @default("pending")
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+model EmotionDetection {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  inputText       String   @db.Text
+  primaryEmotion  String?
+  emotions        Json?    // { emotion: string, score: number }[]
+  sentiment       String?
+  sentimentScore  Float?
+  status          String   @default("pending")
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+model MultiLanguageSupport {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  inputText         String   @db.Text
+  detectedLanguage  String?
+  languageName      String?
+  confidence        Float?
+  supportedLanguages Json?
+  status            String   @default("pending")
+  aiResponse        Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  businessId        String
+}
+
+model LanguageTranslation {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  originalText    String   @db.Text
+  translatedText  String?  @db.Text
+  sourceLanguage  String   @default("auto")
+  targetLanguage  String   @default("en")
+  category        String   @default("general") // general, education, medical, legal, technical
+  status          String   @default("pending")
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+model HearingTest {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  patientName     String?
+  patientAge      Int?
+  testType        String   @default("pure-tone") // pure-tone, speech, tympanometry
+  frequencies     Json?    // test frequencies and results
+  results         Json?
+  recommendations String?  @db.Text
+  status          String   @default("pending")
+  aiResponse      Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  businessId      String
+}
+
+// ============================================
+// AUTH TOKENS
+// ============================================
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}

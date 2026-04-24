@@ -77,7 +77,7 @@ fi
 if [ ! -d "node_modules" ]; then
   echo ""
   echo "==> Installing dependencies..."
-  yarn install
+  npm install
 fi
 
 # Generate Prisma client
@@ -115,7 +115,7 @@ NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
 
 # OpenRouter AI
 OPENROUTER_API_KEY=""
-OPENROUTER_MODEL="anthropic/claude-3-haiku"
+OPENROUTER_MODEL="anthropic/claude-haiku-4.5"
 
 # Twilio (Add your credentials for production)
 TWILIO_ACCOUNT_SID=""
@@ -134,7 +134,7 @@ echo "==> Checking if database needs seeding..."
 AGENT_COUNT=$(psql "${DATABASE_URL}" -t -c "SELECT COUNT(*) FROM \"Agent\";" 2>/dev/null | tr -d ' ' || echo "0")
 if [ "${AGENT_COUNT}" = "0" ] || [ -z "${AGENT_COUNT}" ]; then
   echo "Database appears empty. Running seed..."
-  DATABASE_URL="${DATABASE_URL}" yarn db:seed
+  DATABASE_URL="${DATABASE_URL}" npm run db:seed
 else
   echo "Database already contains data (${AGENT_COUNT} agents). Skipping seed."
 fi
@@ -151,13 +151,24 @@ echo "Test credentials:"
 echo "  Admin: admin@aivoiceagent.com / demo123"
 echo "  Manager: manager@aivoiceagent.com / demo123"
 echo ""
+echo "AI Features available:"
+echo "  - Speech Enhancer"
+echo "  - Accent Adapter"
+echo "  - Intent Classifier"
+echo "  - Emotion Detector"
+echo "  - Multi-language Support"
+echo "  - Language Translator"
+echo "  - Hearing Test (Healthcare)"
+echo ""
 
-# For development
+# For development with hot-reload
 if [ "${NODE_ENV:-development}" = "production" ]; then
   echo "Running in PRODUCTION mode..."
-  yarn build
-  yarn start
+  npm run build
+  npm run start
 else
-  echo "Running in DEVELOPMENT mode..."
-  yarn dev
+  echo "Running in DEVELOPMENT mode with hot-reload..."
+  echo "Code changes will automatically reload the application."
+  echo ""
+  npm run dev
 fi

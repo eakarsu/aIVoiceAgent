@@ -1,7 +1,7 @@
 import { getSession } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, PhoneCall, Bot, TrendingUp, Clock, CheckCircle } from "lucide-react";
+import { Phone, PhoneCall, Bot, TrendingUp, Clock, CheckCircle, Sparkles, Mic, Brain, Heart, Globe, Languages, Ear, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/utils";
@@ -102,6 +102,37 @@ export default async function DashboardPage() {
             </Card>
           </Link>
         ))}
+      </div>
+
+      {/* AI Features */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">AI Features</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[
+            { name: "Speech Enhancer", description: "Enhance speech clarity, grammar, and fluency", icon: Sparkles, href: "/ai/speech-enhancer", color: "text-violet-600", bgColor: "bg-violet-100" },
+            { name: "Accent Adapter", description: "Adapt text between different accents and dialects", icon: Mic, href: "/ai/accent-adapter", color: "text-pink-600", bgColor: "bg-pink-100" },
+            { name: "Intent Classifier", description: "Detect customer intent and extract entities", icon: Brain, href: "/ai/intent-classifier", color: "text-indigo-600", bgColor: "bg-indigo-100" },
+            { name: "Emotion Detector", description: "Analyze emotions and sentiment in text", icon: Heart, href: "/ai/emotion-detector", color: "text-red-600", bgColor: "bg-red-100" },
+            { name: "Multi-Language", description: "Detect and identify languages automatically", icon: Globe, href: "/ai/multi-language", color: "text-teal-600", bgColor: "bg-teal-100" },
+            { name: "Translator", description: "Translate text between multiple languages", icon: Languages, href: "/ai/translator", color: "text-cyan-600", bgColor: "bg-cyan-100" },
+            { name: "Hearing Test", description: "AI-powered audiological analysis and testing", icon: Ear, href: "/ai/hearing-test", color: "text-amber-600", bgColor: "bg-amber-100" },
+          ].map((feature) => (
+            <Link key={feature.name} href={feature.href}>
+              <Card className="hover:shadow-md hover:border-primary/50 transition-all cursor-pointer h-full">
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`p-2.5 rounded-lg ${feature.bgColor}`}>
+                      <feature.icon className={`h-5 w-5 ${feature.color}`} />
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-semibold text-sm">{feature.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{feature.description}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

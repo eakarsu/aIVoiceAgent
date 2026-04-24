@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Building2, User, Bell, Shield, CreditCard, Save, Loader2 } from "lucide-react";
+import { Building2, User, Bell, Shield, CreditCard, Save, Loader2, Lock } from "lucide-react";
+import { validatePasswordStrength, type PasswordStrength } from "@/lib/password-validation";
 
 interface Timezone {
   value: string;
@@ -77,6 +78,14 @@ export default function SettingsPage() {
     industry: "",
     timezone: "UTC",
   });
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const [notifications, setNotifications] = useState({
     emailCalls: true,
@@ -422,25 +431,93 @@ export default function SettingsPage() {
         <TabsContent value="security">
           <Card>
             <CardHeader>
-              <CardTitle>Security Settings</CardTitle>
-              <CardDescription>Manage your account security</CardDescription>
+              <CardTitle>Change Password</CardTitle>
+              <CardDescription>Update your account password</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Current Password</Label>
-                <Input type="password" placeholder="Enter current password" />
+                <Input
+                  type="password"
+                  placeholder="Enter current password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>New Password</Label>
-                  <Input type="password" placeholder="Enter new password" />
+                  <Input
+                    type="password"
+                    placeholder="Enter new password"
+                    value={passwordForm.newPassword}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setPasswordForm({ ...passwordForm, newPassword: value });
+                      setPasswordStrength(value ? validatePasswordStrength(value) : null);
+                    }}
+                  />
+                  {passwordStrength && (
+                    <div className="space-y-1">
+                      <div className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`h-1.5 flex-1 rounded-full ${
+                              i <= passwordStrength.score ? passwordStrength.color : "bg-muted"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{passwordStrength.label}</p>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Confirm Password</Label>
-                  <Input type="password" placeholder="Confirm new password" />
+                  <Input
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={passwordForm.confirmPassword}
+                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  />
                 </div>
               </div>
-              <Button>Update Password</Button>
+              <Button
+                disabled={changingPassword}
+                onClick={async () => {
+                  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                    toast({ title: "Error", description: "Passwords do not match", variant: "destructive" });
+                    return;
+                  }
+                  setChangingPassword(true);
+                  try {
+                    const res = await fetch("/api/auth/change-password", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        currentPassword: passwordForm.currentPassword,
+                        newPassword: passwordForm.newPassword,
+                      }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                      toast({ title: "Success", description: "Password changed successfully", variant: "success" });
+                      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                      setPasswordStrength(null);
+                    } else {
+                      toast({ title: "Error", description: data.error || "Failed to change password", variant: "destructive" });
+                    }
+                  } catch {
+                    toast({ title: "Error", description: "Something went wrong", variant: "destructive" });
+                  } finally {
+                    setChangingPassword(false);
+                  }
+                }}
+              >
+                {changingPassword ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Lock className="h-4 w-4 mr-2" />}
+                Update Password
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>

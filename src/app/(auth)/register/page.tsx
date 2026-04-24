@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Phone } from "lucide-react";
+import { validatePasswordStrength, type PasswordStrength } from "@/lib/password-validation";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -19,11 +20,16 @@ export default function RegisterPage() {
     businessName: "",
   });
   const [loading, setLoading] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (name === "password") {
+      setPasswordStrength(value ? validatePasswordStrength(value) : null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -144,6 +150,26 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
             />
+            {passwordStrength && (
+              <div className="space-y-1">
+                <div className="flex gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 flex-1 rounded-full ${
+                        i <= passwordStrength.score ? passwordStrength.color : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {passwordStrength.label}
+                  {passwordStrength.suggestions.length > 0 && (
+                    <span> — {passwordStrength.suggestions[0]}</span>
+                  )}
+                </p>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm Password</Label>

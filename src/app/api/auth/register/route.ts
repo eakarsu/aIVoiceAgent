@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import { isPasswordValid } from "@/lib/password-validation";
 
 export async function POST(request: Request) {
   try {
@@ -34,6 +36,15 @@ export async function POST(request: Request) {
     if (existingBusiness) {
       return NextResponse.json(
         { error: "Business with this email already exists" },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    const passwordCheck = isPasswordValid(password);
+    if (!passwordCheck.valid) {
+      return NextResponse.json(
+        { error: passwordCheck.error },
         { status: 400 }
       );
     }
@@ -83,9 +94,23 @@ export async function POST(request: Request) {
       return { user, business };
     });
 
+    // Generate email verification token
+    const verificationToken = crypto.randomUUID();
+    await prisma.emailVerificationToken.create({
+      data: {
+        token: verificationToken,
+        email,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
+    });
+
+    console.log(
+      `Email verification link: ${process.env.NEXTAUTH_URL || "http://localhost:3000"}/verify-email?token=${verificationToken}`
+    );
+
     return NextResponse.json(
       {
-        message: "Account created successfully",
+        message: "Account created successfully. Please check your email to verify your account.",
         userId: result.user.id,
         businessId: result.business.id,
       },
