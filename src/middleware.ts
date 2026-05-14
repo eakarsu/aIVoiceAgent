@@ -21,37 +21,105 @@ function getRateLimitResult(key: string, maxRequests: number, windowMs: number) 
   return { success: true, remaining: maxRequests - entry.count };
 }
 
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "*")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+function applyCors(res: NextResponse, origin: string | null) {
+  const allow =
+    ALLOWED_ORIGINS.includes("*") ||
+    (origin && ALLOWED_ORIGINS.includes(origin));
+  if (allow && origin) {
+    res.headers.set("Access-Control-Allow-Origin", origin);
+  } else if (ALLOWED_ORIGINS.includes("*")) {
+    res.headers.set("Access-Control-Allow-Origin", "*");
+  }
+  res.headers.set(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+  );
+  res.headers.set(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Api-Key, X-User-Id, X-Twilio-Signature"
+  );
+  res.headers.set("Access-Control-Max-Age", "86400");
+  res.headers.set("Vary", "Origin");
+}
+
+function applySecurityHeaders(res: NextResponse) {
+  res.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload"
+  );
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("X-XSS-Protection", "0");
+  res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  res.headers.set(
+    "Permissions-Policy",
+    "camera=(), microphone=(self), geolocation=(self), payment=()"
+  );
+  res.headers.set(
+    "Content-Security-Policy",
+    process.env.CSP_HEADER ||
+      "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://openrouter.ai https://api.twilio.com; frame-ancestors 'none'"
+  );
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const origin = request.headers.get("origin");
+  const ip =
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
-  // Rate limit auth endpoints more strictly (10 requests per 15 minutes)
+  // CORS preflight
+  if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
+    const res = new NextResponse(null, { status: 204 });
+    applyCors(res, origin);
+    applySecurityHeaders(res);
+    return res;
+  }
+
+  // Rate limit auth endpoints more strictly
   if (pathname.startsWith("/api/auth/")) {
     const key = `auth:${ip}`;
     const result = getRateLimitResult(key, 10, 15 * 60 * 1000);
-
     if (!result.success) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
       );
+      applyCors(res, origin);
+      applySecurityHeaders(res);
+      return res;
     }
   }
 
-  // Rate limit general API endpoints (100 requests per minute)
-  if (pathname.startsWith("/api/") && !pathname.startsWith("/api/auth/")) {
+  // Rate limit general API endpoints (skip Twilio webhooks — provider IPs vary)
+  if (
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/auth/") &&
+    !pathname.startsWith("/api/voice/")
+  ) {
     const key = `api:${ip}`;
     const result = getRateLimitResult(key, 100, 60 * 1000);
-
     if (!result.success) {
-      return NextResponse.json(
+      const res = NextResponse.json(
         { error: "Too many requests. Please try again later." },
         { status: 429 }
       );
+      applyCors(res, origin);
+      applySecurityHeaders(res);
+      return res;
     }
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  applyCors(res, origin);
+  applySecurityHeaders(res);
+  return res;
 }
 
 export const config = {

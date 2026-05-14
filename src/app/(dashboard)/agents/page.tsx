@@ -59,10 +59,11 @@ export default function AgentsPage() {
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch("/api/agents");
+      const response = await fetch("/api/agents?pageSize=100");
       if (response.ok) {
-        const data = await response.json();
-        setAgents(data);
+        const json = await response.json();
+        // Backwards-compat: handle both paginated and bare-array responses.
+        setAgents(Array.isArray(json) ? json : json.data || []);
       }
     } catch (error) {
       toast({

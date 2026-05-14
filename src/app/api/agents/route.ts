@@ -1,30 +1,52 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentBusinessId } from "@/lib/session";
+import { getPagination, paginatedResponse } from "@/lib/security";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const businessId = await getCurrentBusinessId();
     if (!businessId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const agents = await prisma.agent.findMany({
-      where: { businessId },
-      include: {
-        _count: {
-          select: {
-            scripts: true,
-            responses: true,
-            callFlows: true,
-            phoneNumbers: true,
+    const url = new URL(request.url);
+    const { page, pageSize, skip, take } = getPagination(url);
+    const search = url.searchParams.get("search")?.trim();
+
+    const where: any = {
+      businessId,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" } },
+              { description: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    };
+
+    const [agents, total] = await Promise.all([
+      prisma.agent.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              scripts: true,
+              responses: true,
+              callFlows: true,
+              phoneNumbers: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take,
+      }),
+      prisma.agent.count({ where }),
+    ]);
 
-    return NextResponse.json(agents);
+    return NextResponse.json(paginatedResponse(agents, total, page, pageSize));
   } catch (error) {
     console.error("Error fetching agents:", error);
     return NextResponse.json(

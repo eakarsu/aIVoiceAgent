@@ -165,8 +165,12 @@ export default function IntentClassifierPage() {
 
   const fetchItems = async () => {
     try {
-      const response = await fetch("/api/ai/intent-classifier");
-      if (response.ok) setItems(await response.json());
+      const response = await fetch("/api/ai/intent-classifier?pageSize=100");
+      if (response.ok) {
+        const json = await response.json();
+        // Backwards-compat: accept both paginated { data, pagination } and bare array.
+        setItems(Array.isArray(json) ? json : json.data || []);
+      }
     } catch (error) {
       toast({ title: "Error", description: "Failed to load items", variant: "destructive" });
     } finally {
@@ -180,9 +184,10 @@ export default function IntentClassifierPage() {
     if (!hasProcessing) return;
     const interval = setInterval(async () => {
       try {
-        const response = await fetch("/api/ai/intent-classifier");
+        const response = await fetch("/api/ai/intent-classifier?pageSize=100");
         if (response.ok) {
-          const data = await response.json();
+          const json = await response.json();
+          const data: IntentClassification[] = Array.isArray(json) ? json : json.data || [];
           setItems(data);
           if (selectedItem) {
             const updated = data.find((d: IntentClassification) => d.id === selectedItem.id);

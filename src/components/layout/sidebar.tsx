@@ -38,6 +38,21 @@ const navigation = [
   { name: "Integrations", href: "/integrations", icon: Plug },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
+
+  // // === Batch 08 Gaps & Frontend Mounts ===
+  { name: 'Long-term contextual conversation memory across se...', href: '/cf-long-term-contextual-conversation-memory-across-sessions' },
+  { name: 'Agent performance scoring grading on tone, accurac...', href: '/cf-agent-performance-scoring-grading-on-tone-accuracy-sentiment' },
+  { name: 'Multi-language code-switching for mixed conversati...', href: '/cf-multi-language-code-switching-for-mixed-conversations' },
+  { name: 'Real-time sentiment intervention coaching agents m...', href: '/cf-real-time-sentiment-intervention-coaching-agents-mid-call' },
+  { name: 'Custom voice cloning for branded voice characteris...', href: '/cf-custom-voice-cloning-for-branded-voice-characteristics' },
+  { name: 'A/B testing of script variants with statistical si...', href: '/cf-a-b-testing-of-script-variants-with-statistical' },
+  { name: 'AI coverage is comprehensive (~63 endpoints across...', href: '/gap-ai-coverage-is-comprehensive-63-endpoints-across-multi-language' },
+  { name: 'No real-time voice biometrics for caller verificat...', href: '/gap-no-real-time-voice-biometrics-for-caller-verification' },
+  { name: 'No predictive call outcome scoring before transfer', href: '/gap-no-predictive-call-outcome-scoring-before-transfer' },
+  { name: 'No SIP/non-Twilio telephony backend (currently sin...', href: '/gap-no-sip-non-twilio-telephony-backend-currently-single-provider' },
+  { name: 'Limited CRM integration depth (integrations layer...', href: '/gap-limited-crm-integration-depth-integrations-layer-exists-but' },
+  { name: 'No conversation transcript full-text search', href: '/gap-no-conversation-transcript-full-text-search' },
+  { name: 'Limited billing/metering granularity for AI usage', href: '/gap-limited-billing-metering-granularity-for-ai-usage' },
 ];
 
 const aiFeatures = [

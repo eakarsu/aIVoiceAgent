@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { KnowledgePanel } from "@/components/agents/knowledge-panel";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -348,6 +349,10 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
             <Brain className="h-4 w-4 mr-2" />
             AI Settings
           </TabsTrigger>
+          <TabsTrigger value="knowledge">
+            <FileText className="h-4 w-4 mr-2" />
+            Knowledge
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="settings" className="space-y-4">
@@ -671,6 +676,10 @@ export default function AgentDetailPage({ params }: { params: { id: string } }) 
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="knowledge" className="space-y-4">
+          <KnowledgePanel agentId={agent.id} />
         </TabsContent>
       </Tabs>
 

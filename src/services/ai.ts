@@ -537,6 +537,7 @@ Respond ONLY with valid JSON array, no explanation.`;
 export interface TrainingFeedback {
   callId: string;
   messageId: string;
+  callTranscript?: string;
   originalResponse: string;
   correctedResponse?: string;
   rating: number; // 1-5
@@ -545,18 +546,34 @@ export interface TrainingFeedback {
 
 export async function processTrainingFeedback(
   feedback: TrainingFeedback
-): Promise<{ success: boolean; message: string }> {
-  // In a production system, this would store the feedback for model fine-tuning
-  console.log("Training feedback received:", feedback);
-
-  // Store in database through API for later analysis
+): Promise<{ success: boolean; message: string; id?: string }> {
+  // Persist to AiTrainingData so corrections can be exported later for fine-tuning.
   try {
-    // This would typically call an API endpoint to store the feedback
+    const { default: prisma } = await import("@/lib/prisma");
+    const row = await prisma.aiTrainingData.create({
+      data: {
+        input:
+          typeof feedback.callTranscript === "string"
+            ? feedback.callTranscript
+            : JSON.stringify(feedback.callTranscript),
+        output: feedback.correctedResponse || feedback.originalResponse,
+        context: JSON.stringify({
+          originalResponse: feedback.originalResponse,
+          rating: feedback.rating,
+          feedbackType: feedback.feedbackType,
+          callId: feedback.callId,
+        }),
+        category: feedback.feedbackType,
+        isApproved: feedback.feedbackType === "positive",
+      },
+    });
     return {
       success: true,
+      id: row.id,
       message: "Feedback recorded for AI improvement",
     };
   } catch (error) {
+    console.error("processTrainingFeedback failed", error);
     return {
       success: false,
       message: "Failed to record feedback",

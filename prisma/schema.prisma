@@ -37,6 +37,7 @@ model Business {
   apiKeys         ApiKey[]
   usageBilling    UsageBilling[]
   subscriptions   Subscription[]
+  campaigns       Campaign[]
 }
 
 model User {
@@ -134,6 +135,7 @@ model Agent {
   callFlows       CallFlow[]
   phoneNumbers    PhoneNumber[]
   calls           Call[]
+  campaigns       Campaign[]
 }
 
 model Voice {
@@ -595,6 +597,94 @@ model HearingTest {
   updatedAt       DateTime @updatedAt
 
   businessId      String
+}
+
+// ============================================
+// OUTBOUND CAMPAIGNS
+// ============================================
+
+model Campaign {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  status      String   @default("draft") // draft, running, paused, completed, failed
+  fromNumber  String   // phone number to call from
+  callbackUrl String?  // TwiML URL for outbound calls (defaults to /api/voice/incoming)
+
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  agentId     String?
+  agent       Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  contacts    CampaignContact[]
+}
+
+model CampaignContact {
+  id          String   @id @default(cuid())
+  phoneNumber String
+  name        String?
+  metadata    Json?    // arbitrary extra data (email, custom fields, etc.)
+
+  // Call outcome for this contact
+  callSid     String?
+  status      String   @default("pending") // pending, calling, completed, failed, busy, no-answer
+  callId      String?  // FK to Call record once the call is created
+  attempts    Int      @default(0)
+  lastAttemptAt DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  campaignId  String
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// AGENT KNOWLEDGE BASE (RAG)
+// ============================================
+
+model AgentKnowledge {
+  id          String   @id @default(cuid())
+  agentId     String
+  title       String
+  source      String   @default("text") // text, url, pdf
+  sourceUrl   String?
+  content     String   @db.Text
+  // Lightweight bag-of-words index for cheap retrieval (no vector DB required).
+  tokens      String[] @default([])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([agentId])
+}
+
+// ============================================
+// AI RESULTS POOL (JSONB observability)
+// ============================================
+
+model AiResult {
+  id          String   @id @default(cuid())
+  feature     String
+  businessId  String?
+  userId      String?
+  callId      String?
+  model       String
+  input       Json
+  output      Json
+  tokens      Int?
+  durationMs  Int?
+  createdAt   DateTime @default(now())
+
+  @@index([businessId, feature])
+  @@index([feature, createdAt])
 }
 
 // ============================================
