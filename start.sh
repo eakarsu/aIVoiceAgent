@@ -50,12 +50,17 @@ else
   if ! psql -h localhost -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${DB_NAME}" && \
      ! psql -lqt 2>/dev/null | cut -d \| -f 1 | grep -qw "${DB_NAME}"; then
     echo "Creating database '${DB_NAME}'..."
-    createdb "${DB_NAME}" 2>/dev/null || createdb -h localhost "${DB_NAME}" 2>/dev/null || {
-      echo "Could not create database automatically."
+    createout=$(createdb "${DB_NAME}" 2>&1) || createout=$(createdb -h localhost "${DB_NAME}" 2>&1) || true
+    if echo "${createout}" | grep -q "already exists"; then
+      echo "Database '${DB_NAME}' already exists (detected via createdb)."
+    elif [ -z "${createout}" ]; then
+      echo "Database created successfully!"
+    else
+      echo "Could not create database automatically. createdb said:"
+      echo "  ${createout}"
       echo "Please create it manually: createdb ${DB_NAME}"
       exit 1
-    }
-    echo "Database created successfully!"
+    fi
   else
     echo "Database '${DB_NAME}' already exists."
   fi

@@ -712,3 +712,257 @@ model EmailVerificationToken {
 
   @@index([email])
 }
+
+// ============================================
+// VOICE STUDIO — Voice Cloning + Avatar Studio
+// ============================================
+
+// Voice clone enrollment with mandatory consent gate
+model VsEnrollment {
+  id                 String   @id @default(cuid())
+  businessId         String
+  subjectId          String                         // internal user/contact id
+  subjectName        String
+  displayName        String?
+  status             String   @default("pending")   // pending, active, suspended, revoked
+  consentGrantedAt   DateTime?                      // NULL = consent not yet given
+  consentVersion     String?                        // version of consent doc agreed to
+  idDocumentRef      String?                        // reference to verified ID doc
+  enrollmentNotes    String?  @db.Text
+  qualityScore       Float?                         // 0-1 overall enrollment quality
+  fidelityScore      Float?                         // 0-1 predicted clone fidelity
+  misusRiskScore     Float?                         // 0-1 misuse risk
+  watermarkStrength  String?  @default("medium")    // low, medium, high
+  isArchived         Boolean  @default(false)
+  archivedAt         DateTime?
+  aiSummary          String?  @db.Text
+  metadata           Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  samples            VsEnrollmentSample[]
+  consentEvents      VsConsentEvent[]
+
+  @@index([businessId])
+  @@index([businessId, subjectId])
+  @@index([status])
+}
+
+model VsEnrollmentSample {
+  id             String   @id @default(cuid())
+  enrollmentId   String
+  enrollment     VsEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  sampleUrl      String
+  durationSecs   Float?
+  qualityScore   Float?   // 0-1
+  language       String   @default("en")
+  noiseLevel     String?  // low, medium, high
+  sampleType     String   @default("read-aloud") // read-aloud, conversational, phoneme-set
+  isAccepted     Boolean  @default(false)
+  rejectionReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([enrollmentId])
+}
+
+// Append-only consent ledger
+model VsConsentEvent {
+  id             String   @id @default(cuid())
+  businessId     String
+  enrollmentId   String?
+  enrollment     VsEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  subjectId      String
+  eventType      String   // granted, revoked, updated, witnessed, expired
+  scope          String   // tts, avatar, dubbing, all
+  consentVersion String
+  witnessId      String?
+  witnessName    String?
+  ipAddress      String?
+  userAgent      String?
+  documentHash   String?                           // SHA-256 of consent doc
+  expiresAt      DateTime?
+  retentionUntil DateTime?
+  notes          String?  @db.Text
+  isTampered     Boolean  @default(false)
+  ledgerHash     String?                           // chained hash for tamper detection
+  createdAt      DateTime @default(now())           // immutable — no updatedAt
+
+  @@index([businessId, subjectId])
+  @@index([enrollmentId])
+  @@index([eventType])
+}
+
+// TTS style/emotion/prosody control
+model VsTtsStyle {
+  id              String   @id @default(cuid())
+  businessId      String
+  name            String
+  description     String?
+  baseVoiceId     String?
+  enrollmentId    String?                          // optional clone source
+  emotion         String   @default("neutral")    // neutral, happy, sad, angry, fear, surprise
+  pace            String   @default("medium")     // slow, medium, fast
+  pitch           String   @default("medium")     // low, medium, high
+  volume          String   @default("medium")
+  emphasis        String?                         // word-level SSML emphasis hints
+  pauseStrategy   String?
+  ssmlTemplate    String?  @db.Text
+  brand           String?
+  qualityScore    Float?
+  consistencyScore Float?
+  naturalnessPred Float?
+  engagementPred  Float?
+  isActive        Boolean  @default(true)
+  isArchived      Boolean  @default(false)
+  archivedAt      DateTime?
+  aiSummary       String?  @db.Text
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, name])
+}
+
+// Avatar render jobs
+model VsAvatarRenderJob {
+  id               String   @id @default(cuid())
+  businessId       String
+  name             String
+  description      String?
+  enrollmentId     String?                        // source voice clone / likeness
+  assetType        String   @default("3d")        // 2d, 3d, animated-still
+  renderTier       String   @default("standard")  // draft, standard, premium
+  status           String   @default("queued")    // queued, processing, completed, failed, cancelled
+  inputAssetUrl    String?
+  outputAssetUrl   String?
+  previewUrl       String?
+  renderConfig     Json?
+  complexityClass  String?
+  predictedTimeSec Float?
+  predictedCostUsd Float?
+  actualTimeSec    Float?
+  actualCostUsd    Float?
+  fidelityScore    Float?
+  pipelineHealth   Float?
+  failureCause     String?  @db.Text
+  licensingOk      Boolean  @default(false)
+  cacheKey         String?
+  isArchived       Boolean  @default(false)
+  archivedAt       DateTime?
+  aiSummary        String?  @db.Text
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  lipsyncJobs      VsLipsyncJob[]
+
+  @@index([businessId])
+  @@index([businessId, status])
+}
+
+// Lipsync alignment jobs
+model VsLipsyncJob {
+  id                  String   @id @default(cuid())
+  businessId          String
+  name                String
+  description         String?
+  renderJobId         String?
+  renderJob           VsAvatarRenderJob? @relation(fields: [renderJobId], references: [id], onDelete: SetNull)
+  audioUrl            String
+  videoUrl            String?
+  outputUrl           String?
+  language            String   @default("en")
+  frameRate           Float?
+  status              String   @default("queued")  // queued, processing, completed, failed
+  driftMs             Float?
+  qualityScore        Float?
+  naturalLookScore    Float?
+  mismatchClass       String?
+  occludedMouth       Boolean  @default(false)
+  mouthShapeDifficulty String?
+  renderCorrectionSec Float?
+  visemeTrackUrl      String?
+  visemeLanguagePack  String?
+  manualTouchUpNeeded Boolean  @default(false)
+  qaReport            String?  @db.Text
+  isArchived          Boolean  @default(false)
+  archivedAt          DateTime?
+  aiSummary           String?  @db.Text
+  metadata            Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([renderJobId])
+}
+
+// Multilingual dubbing jobs
+model VsDubbingJob {
+  id                    String   @id @default(cuid())
+  businessId            String
+  name                  String
+  description           String?
+  enrollmentId          String?                     // voice to preserve
+  sourceLanguage        String   @default("en")
+  targetLanguages       String[]
+  sourceAudioUrl        String
+  sourceScriptUrl       String?
+  status                String   @default("queued") // queued, processing, completed, failed, cancelled
+  difficultyClass       String?
+  voicePreservationScore Float?
+  culturalFitScore      Float?
+  acceptanceScore       Float?
+  dubQualityScore       Float?
+  timingFitOk           Boolean  @default(false)
+  emotionMismatch       Boolean  @default(false)
+  targetMarket          String?
+  glossaryUrl           String?
+  dubScriptUrl          String?
+  outputManifestUrl     String?
+  voiceActorFallback    String?
+  backTranslationCheck  Boolean  @default(false)
+  isArchived            Boolean  @default(false)
+  archivedAt            DateTime?
+  aiSummary             String?  @db.Text
+  metadata              Json?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+}
+
+// C2PA-style provenance + watermark tracking
+model VsProvenanceRecord {
+  id                  String   @id @default(cuid())
+  businessId          String
+  assetUrl            String
+  assetType           String   @default("audio")   // audio, video, image
+  originClaim         String?
+  c2paManifestUrl     String?
+  manifestValid       Boolean  @default(false)
+  signerTrust         String?
+  isTampered          Boolean  @default(false)
+  watermarkStrength   String   @default("medium")   // none, low, medium, high
+  watermarkType       String   @default("audible")  // audible, inaudible, metadata
+  watermarkPayload    String?
+  robustnessScore     Float?
+  detectionSurvival   Float?
+  attributionConfidence Float?
+  trustScore          Float?
+  chainOfCustody      Json?
+  redactionEvents     Json?
+  revokedAt           DateTime?
+  publicCardUrl       String?
+  additionalMetadata  Json?
+  isArchived          Boolean  @default(false)
+  archivedAt          DateTime?
+  aiSummary           String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, assetType])
+}

@@ -23,6 +23,11 @@ import {
   Globe,
   GraduationCap,
   Stethoscope,
+  Video,
+  AlignCenter,
+  Fingerprint,
+  ShieldCheck,
+  Volume2,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -63,6 +68,16 @@ const aiFeatures = [
   { name: "Multi-language", href: "/ai/multi-language", icon: Globe },
   { name: "Translator", href: "/ai/translator", icon: Languages },
   { name: "Hearing Test", href: "/ai/hearing-test", icon: Stethoscope },
+];
+
+const voiceStudioNavigation = [
+  { name: "Voice Clone Enroll", href: "/voicestudio/voiceCloneEnroll", icon: Mic },
+  { name: "Consent Ledger", href: "/voicestudio/consentLedger", icon: ShieldCheck },
+  { name: "TTS Style Control", href: "/voicestudio/ttsStyleControl", icon: Volume2 },
+  { name: "Avatar Render", href: "/voicestudio/avatarRender", icon: Video },
+  { name: "Lipsync Engine", href: "/voicestudio/lipsyncEngine", icon: AlignCenter },
+  { name: "Multilingual Dubbing", href: "/voicestudio/multilingualDubbing", icon: Languages },
+  { name: "Watermark Provenance", href: "/voicestudio/watermarkProvenance", icon: Fingerprint },
 ];
 
 const adminNavigation = [
@@ -128,7 +143,35 @@ export function Sidebar() {
               )}
               title={collapsed ? item.name : undefined}
             >
-              <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+              {(() => { const Icon = item.icon || Sparkles; return <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />; })()}
+              {!collapsed && item.name}
+            </Link>
+          );
+        })}
+
+        {/* Voice Studio Section */}
+        <div className="my-4 border-t" />
+        {!collapsed && (
+          <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Voice Studio
+          </div>
+        )}
+        {voiceStudioNavigation.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                collapsed && "justify-center"
+              )}
+              title={collapsed ? item.name : undefined}
+            >
+              {(() => { const Icon = item.icon || Sparkles; return <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />; })()}
               {!collapsed && item.name}
             </Link>
           );
@@ -156,7 +199,7 @@ export function Sidebar() {
               )}
               title={collapsed ? item.name : undefined}
             >
-              <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+              {(() => { const Icon = item.icon || Sparkles; return <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />; })()}
               {!collapsed && item.name}
             </Link>
           );
@@ -180,7 +223,7 @@ export function Sidebar() {
                   )}
                   title={collapsed ? item.name : undefined}
                 >
-                  <item.icon className={cn("h-5 w-5", !collapsed && "mr-3")} />
+                  {(() => { const Icon = item.icon || Sparkles; return <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />; })()}
                   {!collapsed && item.name}
                 </Link>
               );
