@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -17,7 +17,7 @@ export async function PUT(
     // Verify ownership
     const existingResponse = await prisma.responseLibrary.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         agent: { businessId },
       },
     });
@@ -27,7 +27,7 @@ export async function PUT(
     }
 
     const response = await prisma.responseLibrary.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         trigger: body.trigger,
         response: body.response,
@@ -49,7 +49,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -59,7 +59,7 @@ export async function DELETE(
 
     const existingResponse = await prisma.responseLibrary.findFirst({
       where: {
-        id: params.id,
+        id: (await params).id,
         agent: { businessId },
       },
     });
@@ -69,7 +69,7 @@ export async function DELETE(
     }
 
     await prisma.responseLibrary.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "Response deleted successfully" });

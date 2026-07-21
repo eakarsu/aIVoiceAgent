@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentBusinessId } from "@/lib/session";
 import { getPagination, paginatedResponse } from "@/lib/security";
 
-interface Ctx { params: { id: string } }
+interface Ctx { params: Promise<{ id: string }> }
 
 function tokenize(text: string): string[] {
   return Array.from(
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const agent = await prisma.agent.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
     if (!agent)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -39,12 +39,12 @@ export async function GET(req: NextRequest, { params }: Ctx) {
 
     const [rows, total] = await Promise.all([
       (prisma as any).agentKnowledge.findMany({
-        where: { agentId: params.id },
+        where: { agentId: (await params).id },
         orderBy: { updatedAt: "desc" },
         skip,
         take,
       }),
-      (prisma as any).agentKnowledge.count({ where: { agentId: params.id } }),
+      (prisma as any).agentKnowledge.count({ where: { agentId: (await params).id } }),
     ]);
 
     return NextResponse.json(paginatedResponse(rows, total, page, pageSize));
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const agent = await prisma.agent.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
     if (!agent)
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -76,7 +76,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
 
     const row = await (prisma as any).agentKnowledge.create({
       data: {
-        agentId: params.id,
+        agentId: (await params).id,
         title,
         content,
         source: source || (sourceUrl ? "url" : "text"),

@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -13,7 +13,7 @@ export async function GET(
     }
 
     const agent = await prisma.agent.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
       include: {
         scripts: true,
         responses: true,
@@ -38,7 +38,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -50,7 +50,7 @@ export async function PUT(
 
     // Verify ownership
     const existingAgent = await prisma.agent.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existingAgent) {
@@ -58,7 +58,7 @@ export async function PUT(
     }
 
     const agent = await prisma.agent.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name: body.name,
         description: body.description,
@@ -92,7 +92,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -102,7 +102,7 @@ export async function DELETE(
 
     // Verify ownership
     const existingAgent = await prisma.agent.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existingAgent) {
@@ -110,7 +110,7 @@ export async function DELETE(
     }
 
     await prisma.agent.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "Agent deleted successfully" });

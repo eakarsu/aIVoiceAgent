@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 import { getCurrentBusinessId } from "@/lib/session";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
@@ -18,7 +18,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     }
 
     const campaign = await prisma.campaign.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
       include: {
         agent: { select: { id: true, name: true } },
         contacts: { orderBy: { createdAt: "asc" } },
@@ -44,7 +44,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     }
 
     const existing = await prisma.campaign.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existing) {
@@ -55,7 +55,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const { name, description, fromNumber, agentId, callbackUrl } = body;
 
     const updated = await prisma.campaign.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         ...(name !== undefined && { name }),
         ...(description !== undefined && { description }),
@@ -80,14 +80,14 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     }
 
     const existing = await prisma.campaign.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existing) {
       return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
     }
 
-    await prisma.campaign.delete({ where: { id: params.id } });
+    await prisma.campaign.delete({ where: { id: (await params).id } });
 
     return NextResponse.json({ deleted: true });
   } catch (error) {

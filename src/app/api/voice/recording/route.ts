@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (recordingSid && process.env.TWILIO_FETCH_RECORDING_META === "true") {
       try {
         const meta = await getRecording(recordingSid);
-        if (meta?.mediaUrl) mediaUrl = meta.mediaUrl;
+        if (meta?.url) mediaUrl = meta.url;
       } catch (err) {
         console.warn("getRecording failed", err);
       }

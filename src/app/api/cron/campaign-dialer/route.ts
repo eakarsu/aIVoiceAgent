@@ -9,12 +9,14 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { makeOutboundCall } from "@/services/twilio";
 
+export const dynamic = "force-dynamic";
+
 const BATCH_SIZE = Number(process.env.CAMPAIGN_BATCH_SIZE || 5);
 const MAX_ATTEMPTS = Number(process.env.CAMPAIGN_MAX_ATTEMPTS || 3);
 
 function authorized(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
-  if (!secret) return true; // dev mode: allow
+  if (!secret) return false;
   const fromQuery = req.nextUrl.searchParams.get("token");
   const fromHeader = req.headers
     .get("authorization")

@@ -1,0 +1,36 @@
+{
+  "validAudio": {
+    "filename": "voice.wav",
+    "mimeType": "audio/wav",
+    "sizeBytes": 1000,
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "validAudioProbe": {
+    "mimeType": "audio/wav",
+    "codec": "pcm_s16le",
+    "durationMs": 1000,
+    "sampleRate": 48000,
+    "channels": 1
+  },
+  "validVideo": {
+    "filename": "preview.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 10000,
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "validVideoProbe": {
+    "mimeType": "video/mp4",
+    "codec": "h264",
+    "durationMs": 1000,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "adversarialProbe": {
+    "mimeType": "audio/wav",
+    "codec": "../../bin/sh",
+    "durationMs": 1000,
+    "sampleRate": 48000,
+    "channels": 1
+  }
+}

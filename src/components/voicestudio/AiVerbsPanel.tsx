@@ -54,7 +54,7 @@ export function AiVerbsPanel({ endpoint, verbs, contextBody = {} }: AiVerbsPanel
             <div className="flex items-center justify-between p-2 bg-muted/50">
               <code className="text-xs font-mono text-foreground">{verb}</code>
               <div className="flex items-center gap-1">
-                {results[verb] && (
+                {Object.prototype.hasOwnProperty.call(results, verb) && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -80,7 +80,7 @@ export function AiVerbsPanel({ endpoint, verbs, contextBody = {} }: AiVerbsPanel
                 </Button>
               </div>
             </div>
-            {results[verb] && expanded[verb] && (
+            {Object.prototype.hasOwnProperty.call(results, verb) && expanded[verb] && (
               <pre className="p-3 text-xs bg-background overflow-auto max-h-64 whitespace-pre-wrap break-all">
                 {JSON.stringify(results[verb], null, 2)}
               </pre>

@@ -15,29 +15,29 @@ datasource db {
 // ============================================
 
 model Business {
-  id          String   @id @default(cuid())
-  name        String
-  email       String   @unique
-  phone       String?
-  address     String?
-  website     String?
-  industry    String?
-  timezone    String   @default("UTC")
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  website   String?
+  industry  String?
+  timezone  String   @default("UTC")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  users           User[]
-  agents          Agent[]
-  phoneNumbers    PhoneNumber[]
-  calls           Call[]
-  integrations    Integration[]
-  webhooks        Webhook[]
-  apiKeys         ApiKey[]
-  usageBilling    UsageBilling[]
-  subscriptions   Subscription[]
-  campaigns       Campaign[]
+  users         User[]
+  agents        Agent[]
+  phoneNumbers  PhoneNumber[]
+  calls         Call[]
+  integrations  Integration[]
+  webhooks      Webhook[]
+  apiKeys       ApiKey[]
+  usageBilling  UsageBilling[]
+  subscriptions Subscription[]
+  campaigns     Campaign[]
 }
 
 model User {
@@ -52,8 +52,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  businessId    String
-  business      Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 enum UserRole {
@@ -64,31 +64,31 @@ enum UserRole {
 }
 
 model Subscription {
-  id          String   @id @default(cuid())
-  plan        String   // free, starter, professional, enterprise
-  status      String   @default("active") // active, cancelled, past_due
-  startDate   DateTime @default(now())
-  endDate     DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(cuid())
+  plan      String // free, starter, professional, enterprise
+  status    String    @default("active") // active, cancelled, past_due
+  startDate DateTime  @default(now())
+  endDate   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 model UsageBilling {
-  id            String   @id @default(cuid())
-  month         DateTime
-  callMinutes   Int      @default(0)
-  aiTokens      Int      @default(0)
-  smsCount      Int      @default(0)
-  totalAmount   Float    @default(0)
-  isPaid        Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  month       DateTime
+  callMinutes Int      @default(0)
+  aiTokens    Int      @default(0)
+  smsCount    Int      @default(0)
+  totalAmount Float    @default(0)
+  isPaid      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  businessId    String
-  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -96,55 +96,55 @@ model UsageBilling {
 // ============================================
 
 model Agent {
-  id              String   @id @default(cuid())
-  name            String
-  description     String?
-  isActive        Boolean  @default(true)
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean @default(true)
 
   // Voice Settings
-  voiceId         String?
-  voiceName       String   @default("Default")
-  voiceProvider   String   @default("system") // system, elevenlabs, azure, google
-  voiceSpeed      Float    @default(1.0)
-  voicePitch      Float    @default(1.0)
+  voiceId       String?
+  voiceName     String  @default("Default")
+  voiceProvider String  @default("system") // system, elevenlabs, azure, google
+  voiceSpeed    Float   @default(1.0)
+  voicePitch    Float   @default(1.0)
 
   // Personality Settings
-  personalityType String   @default("professional") // professional, friendly, casual, formal
-  greeting        String   @default("Hello! How can I help you today?")
-  fallbackMessage String   @default("I'm sorry, I didn't understand that. Could you please repeat?")
-  transferMessage String   @default("Let me transfer you to a human agent.")
+  personalityType String @default("professional") // professional, friendly, casual, formal
+  greeting        String @default("Hello! How can I help you today?")
+  fallbackMessage String @default("I'm sorry, I didn't understand that. Could you please repeat?")
+  transferMessage String @default("Let me transfer you to a human agent.")
 
   // AI Settings
-  aiModel         String   @default("gpt-4")
-  temperature     Float    @default(0.7)
-  maxTokens       Int      @default(150)
+  aiModel     String @default("gpt-4")
+  temperature Float  @default(0.7)
+  maxTokens   Int    @default(150)
 
   // Language Settings
-  primaryLanguage String   @default("en")
+  primaryLanguage    String   @default("en")
   supportedLanguages String[] @default(["en"])
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businessId      String
-  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
   // Relations
-  scripts         Script[]
-  responses       ResponseLibrary[]
-  callFlows       CallFlow[]
-  phoneNumbers    PhoneNumber[]
-  calls           Call[]
-  campaigns       Campaign[]
+  scripts      Script[]
+  responses    ResponseLibrary[]
+  callFlows    CallFlow[]
+  phoneNumbers PhoneNumber[]
+  calls        Call[]
+  campaigns    Campaign[]
 }
 
 model Voice {
   id          String   @id @default(cuid())
   name        String
-  provider    String   // system, elevenlabs, azure, google
-  voiceId     String   // external voice ID
+  provider    String // system, elevenlabs, azure, google
+  voiceId     String // external voice ID
   language    String   @default("en")
-  gender      String   // male, female, neutral
+  gender      String // male, female, neutral
   description String?
   sampleUrl   String?
   isActive    Boolean  @default(true)
@@ -163,52 +163,52 @@ model Script {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  agentId     String
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
 
 model ResponseLibrary {
-  id          String   @id @default(cuid())
-  trigger     String   // keyword or phrase that triggers this response
-  response    String   @db.Text
-  category    String?
-  priority    Int      @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  trigger   String // keyword or phrase that triggers this response
+  response  String   @db.Text
+  category  String?
+  priority  Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  agentId     String
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 }
 
 model CallFlow {
   id          String   @id @default(cuid())
   name        String
   description String?
-  flowData    Json     // JSON representation of call flow
+  flowData    Json // JSON representation of call flow
   isDefault   Boolean  @default(false)
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  agentId     String
-  agent       Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
+  agent   Agent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
 
-  nodes       CallFlowNode[]
+  nodes CallFlowNode[]
 }
 
 model CallFlowNode {
-  id          String   @id @default(cuid())
-  type        String   // greeting, menu, input, transfer, voicemail, hangup
-  name        String
-  content     String?  @db.Text
-  position    Json     // {x, y} position in designer
-  config      Json?    // node-specific configuration
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  type      String // greeting, menu, input, transfer, voicemail, hangup
+  name      String
+  content   String?  @db.Text
+  position  Json // {x, y} position in designer
+  config    Json? // node-specific configuration
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  callFlowId  String
-  callFlow    CallFlow @relation(fields: [callFlowId], references: [id], onDelete: Cascade)
+  callFlowId String
+  callFlow   CallFlow @relation(fields: [callFlowId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -216,123 +216,123 @@ model CallFlowNode {
 // ============================================
 
 model PhoneNumber {
-  id              String   @id @default(cuid())
-  number          String   @unique
-  displayName     String?
-  country         String   @default("US")
-  type            String   @default("local") // local, tollfree, mobile
-  provider        String   @default("twilio")
-  providerId      String?  // external ID from provider
-  status          String   @default("active") // active, suspended, pending
-  monthlyFee      Float    @default(0)
+  id          String  @id @default(cuid())
+  number      String  @unique
+  displayName String?
+  country     String  @default("US")
+  type        String  @default("local") // local, tollfree, mobile
+  provider    String  @default("twilio")
+  providerId  String? // external ID from provider
+  status      String  @default("active") // active, suspended, pending
+  monthlyFee  Float   @default(0)
 
   // Call handling
-  callHandling    String   @default("agent") // agent, forward, voicemail
-  forwardTo       String?
+  callHandling     String  @default("agent") // agent, forward, voicemail
+  forwardTo        String?
   voicemailEnabled Boolean @default(true)
   recordingEnabled Boolean @default(true)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businessId      String
-  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  agentId         String?
-  agent           Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentId String?
+  agent   Agent?  @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   // Relations
-  calls           Call[]
-  routingRules    CallRoutingRule[]
+  calls        Call[]
+  routingRules CallRoutingRule[]
 }
 
 model CallRoutingRule {
-  id              String   @id @default(cuid())
-  name            String
-  priority        Int      @default(0)
-  condition       String   // time-based, caller-id, etc.
-  conditionValue  Json     // condition configuration
-  action          String   // forward, voicemail, agent, hangup
-  actionValue     String?  // destination for action
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  priority       Int      @default(0)
+  condition      String // time-based, caller-id, etc.
+  conditionValue Json // condition configuration
+  action         String // forward, voicemail, agent, hangup
+  actionValue    String? // destination for action
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  phoneNumberId   String
-  phoneNumber     PhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
+  phoneNumberId String
+  phoneNumber   PhoneNumber @relation(fields: [phoneNumberId], references: [id], onDelete: Cascade)
 }
 
 model Call {
-  id              String   @id @default(cuid())
-  callSid         String?  @unique // Twilio call SID
-  direction       String   // inbound, outbound
-  status          String   // queued, ringing, in-progress, completed, failed, busy, no-answer
-  from            String
-  to              String
-  startTime       DateTime @default(now())
-  endTime         DateTime?
-  duration        Int?     // in seconds
+  id        String    @id @default(cuid())
+  callSid   String?   @unique // Twilio call SID
+  direction String // inbound, outbound
+  status    String // queued, ringing, in-progress, completed, failed, busy, no-answer
+  from      String
+  to        String
+  startTime DateTime  @default(now())
+  endTime   DateTime?
+  duration  Int? // in seconds
 
   // Recording
-  recordingUrl    String?
-  recordingSid    String?
+  recordingUrl String?
+  recordingSid String?
 
   // Transcription
-  transcription   String?  @db.Text
+  transcription String? @db.Text
 
   // AI Analysis
-  sentiment       String?  // positive, negative, neutral
-  sentimentScore  Float?
-  intent          String?
-  entities        Json?
-  summary         String?  @db.Text
+  sentiment      String? // positive, negative, neutral
+  sentimentScore Float?
+  intent         String?
+  entities       Json?
+  summary        String? @db.Text
 
   // Call outcome
-  outcome         String?  // resolved, transferred, voicemail, abandoned
-  resolution      String?
-  wasTransferred  Boolean  @default(false)
-  transferredTo   String?
+  outcome        String? // resolved, transferred, voicemail, abandoned
+  resolution     String?
+  wasTransferred Boolean @default(false)
+  transferredTo  String?
 
   // Voicemail
-  hasVoicemail    Boolean  @default(false)
-  voicemailUrl    String?
+  hasVoicemail           Boolean @default(false)
+  voicemailUrl           String?
   voicemailTranscription String? @db.Text
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businessId      String
-  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  phoneNumberId   String?
-  phoneNumber     PhoneNumber? @relation(fields: [phoneNumberId], references: [id], onDelete: SetNull)
+  phoneNumberId String?
+  phoneNumber   PhoneNumber? @relation(fields: [phoneNumberId], references: [id], onDelete: SetNull)
 
-  agentId         String?
-  agent           Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentId String?
+  agent   Agent?  @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
   // Relations
-  messages        CallMessage[]
-  events          CallEvent[]
+  messages CallMessage[]
+  events   CallEvent[]
 }
 
 model CallMessage {
-  id          String   @id @default(cuid())
-  role        String   // user, assistant, system
-  content     String   @db.Text
-  timestamp   DateTime @default(now())
+  id        String   @id @default(cuid())
+  role      String // user, assistant, system
+  content   String   @db.Text
+  timestamp DateTime @default(now())
 
-  callId      String
-  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  callId String
+  call   Call   @relation(fields: [callId], references: [id], onDelete: Cascade)
 }
 
 model CallEvent {
-  id          String   @id @default(cuid())
-  type        String   // ringing, answered, hold, resume, transfer, hangup
-  data        Json?
-  timestamp   DateTime @default(now())
+  id        String   @id @default(cuid())
+  type      String // ringing, answered, hold, resume, transfer, hangup
+  data      Json?
+  timestamp DateTime @default(now())
 
-  callId      String
-  call        Call     @relation(fields: [callId], references: [id], onDelete: Cascade)
+  callId String
+  call   Call   @relation(fields: [callId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -340,66 +340,66 @@ model CallEvent {
 // ============================================
 
 model Integration {
-  id              String   @id @default(cuid())
-  type            String   // calendar, crm, booking, payment, sms
-  provider        String   // google, outlook, salesforce, hubspot, stripe, etc.
-  name            String
-  config          Json     // encrypted configuration
-  credentials     Json?    // encrypted credentials
-  isActive        Boolean  @default(true)
-  lastSyncAt      DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String    @id @default(cuid())
+  type        String // calendar, crm, booking, payment, sms
+  provider    String // google, outlook, salesforce, hubspot, stripe, etc.
+  name        String
+  config      Json // encrypted configuration
+  credentials Json? // encrypted credentials
+  isActive    Boolean   @default(true)
+  lastSyncAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  businessId      String
-  business        Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 model Webhook {
-  id          String   @id @default(cuid())
-  name        String
-  url         String
-  events      String[] // call.started, call.ended, call.transferred, etc.
-  secret      String?
-  isActive    Boolean  @default(true)
+  id              String    @id @default(cuid())
+  name            String
+  url             String
+  events          String[] // call.started, call.ended, call.transferred, etc.
+  secret          String?
+  isActive        Boolean   @default(true)
   lastTriggeredAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  logs        WebhookLog[]
+  logs WebhookLog[]
 }
 
 model WebhookLog {
-  id          String   @id @default(cuid())
-  event       String
-  payload     Json
-  response    Json?
-  statusCode  Int?
-  success     Boolean
-  error       String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  event      String
+  payload    Json
+  response   Json?
+  statusCode Int?
+  success    Boolean
+  error      String?
+  createdAt  DateTime @default(now())
 
-  webhookId   String
-  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhookId String
+  webhook   Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
-  id          String   @id @default(cuid())
-  name        String
-  key         String   @unique
-  prefix      String   // first 8 chars for display
-  scopes      String[] // read, write, admin
-  lastUsedAt  DateTime?
-  expiresAt   DateTime?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String    @id @default(cuid())
+  name       String
+  key        String    @unique
+  prefix     String // first 8 chars for display
+  scopes     String[] // read, write, admin
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  isActive   Boolean   @default(true)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -407,37 +407,37 @@ model ApiKey {
 // ============================================
 
 model DailyAnalytics {
-  id              String   @id @default(cuid())
-  date            DateTime
-  businessId      String
+  id         String   @id @default(cuid())
+  date       DateTime
+  businessId String
 
   // Call metrics
-  totalCalls      Int      @default(0)
-  inboundCalls    Int      @default(0)
-  outboundCalls   Int      @default(0)
-  answeredCalls   Int      @default(0)
-  missedCalls     Int      @default(0)
-  avgDuration     Float    @default(0)
-  totalDuration   Int      @default(0)
+  totalCalls    Int   @default(0)
+  inboundCalls  Int   @default(0)
+  outboundCalls Int   @default(0)
+  answeredCalls Int   @default(0)
+  missedCalls   Int   @default(0)
+  avgDuration   Float @default(0)
+  totalDuration Int   @default(0)
 
   // Resolution metrics
-  resolvedCalls   Int      @default(0)
-  transferredCalls Int     @default(0)
-  voicemailCalls  Int      @default(0)
-  abandonedCalls  Int      @default(0)
+  resolvedCalls    Int @default(0)
+  transferredCalls Int @default(0)
+  voicemailCalls   Int @default(0)
+  abandonedCalls   Int @default(0)
 
   // Sentiment metrics
-  positiveSentiment Int    @default(0)
-  negativeSentiment Int    @default(0)
-  neutralSentiment  Int    @default(0)
-  avgSentimentScore Float  @default(0)
+  positiveSentiment Int   @default(0)
+  negativeSentiment Int   @default(0)
+  neutralSentiment  Int   @default(0)
+  avgSentimentScore Float @default(0)
 
   // Conversion metrics
-  conversions     Int      @default(0)
-  conversionRate  Float    @default(0)
+  conversions    Int   @default(0)
+  conversionRate Float @default(0)
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([date, businessId])
 }
@@ -447,23 +447,23 @@ model DailyAnalytics {
 // ============================================
 
 model ConversationFeedback {
-  id          String   @id @default(cuid())
-  callId      String
-  rating      Int      // 1-5
-  feedback    String?  @db.Text
-  category    String?  // accuracy, helpfulness, naturalness
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  callId    String
+  rating    Int // 1-5
+  feedback  String?  @db.Text
+  category  String? // accuracy, helpfulness, naturalness
+  createdAt DateTime @default(now())
 }
 
 model AiTrainingData {
-  id          String   @id @default(cuid())
-  input       String   @db.Text
-  output      String   @db.Text
-  context     String?  @db.Text
-  category    String?
-  isApproved  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(cuid())
+  input      String   @db.Text
+  output     String   @db.Text
+  context    String?  @db.Text
+  category   String?
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 // ============================================
@@ -495,90 +495,90 @@ model SpeechEnhancement {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 model AccentAdaptation {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  originalText    String   @db.Text
-  adaptedText     String?  @db.Text
-  sourceAccent    String   @default("neutral")
-  targetAccent    String   @default("american") // american, british, australian, indian, etc.
-  status          String   @default("pending")
-  aiResponse      Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  originalText String   @db.Text
+  adaptedText  String?  @db.Text
+  sourceAccent String   @default("neutral")
+  targetAccent String   @default("american") // american, british, australian, indian, etc.
+  status       String   @default("pending")
+  aiResponse   Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 model IntentClassification {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  inputText       String   @db.Text
-  detectedIntent  String?
-  confidence      Float?
-  entities        Json?
-  status          String   @default("pending")
-  aiResponse      Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  inputText      String   @db.Text
+  detectedIntent String?
+  confidence     Float?
+  entities       Json?
+  status         String   @default("pending")
+  aiResponse     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 model EmotionDetection {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  inputText       String   @db.Text
-  primaryEmotion  String?
-  emotions        Json?    // { emotion: string, score: number }[]
-  sentiment       String?
-  sentimentScore  Float?
-  status          String   @default("pending")
-  aiResponse      Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  inputText      String   @db.Text
+  primaryEmotion String?
+  emotions       Json? // { emotion: string, score: number }[]
+  sentiment      String?
+  sentimentScore Float?
+  status         String   @default("pending")
+  aiResponse     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 model MultiLanguageSupport {
-  id                String   @id @default(cuid())
-  title             String
-  description       String?
-  inputText         String   @db.Text
-  detectedLanguage  String?
-  languageName      String?
-  confidence        Float?
+  id                 String   @id @default(cuid())
+  title              String
+  description        String?
+  inputText          String   @db.Text
+  detectedLanguage   String?
+  languageName       String?
+  confidence         Float?
   supportedLanguages Json?
-  status            String   @default("pending")
-  aiResponse        Json?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  status             String   @default("pending")
+  aiResponse         Json?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  businessId        String
+  businessId String
 }
 
 model LanguageTranslation {
-  id              String   @id @default(cuid())
-  title           String
-  description     String?
-  originalText    String   @db.Text
-  translatedText  String?  @db.Text
-  sourceLanguage  String   @default("auto")
-  targetLanguage  String   @default("en")
-  category        String   @default("general") // general, education, medical, legal, technical
-  status          String   @default("pending")
-  aiResponse      Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  originalText   String   @db.Text
+  translatedText String?  @db.Text
+  sourceLanguage String   @default("auto")
+  targetLanguage String   @default("en")
+  category       String   @default("general") // general, education, medical, legal, technical
+  status         String   @default("pending")
+  aiResponse     Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 model HearingTest {
@@ -588,7 +588,7 @@ model HearingTest {
   patientName     String?
   patientAge      Int?
   testType        String   @default("pure-tone") // pure-tone, speech, tympanometry
-  frequencies     Json?    // test frequencies and results
+  frequencies     Json? // test frequencies and results
   results         Json?
   recommendations String?  @db.Text
   status          String   @default("pending")
@@ -596,7 +596,7 @@ model HearingTest {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  businessId      String
+  businessId String
 }
 
 // ============================================
@@ -604,46 +604,46 @@ model HearingTest {
 // ============================================
 
 model Campaign {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   name        String
   description String?
-  status      String   @default("draft") // draft, running, paused, completed, failed
-  fromNumber  String   // phone number to call from
-  callbackUrl String?  // TwiML URL for outbound calls (defaults to /api/voice/incoming)
+  status      String  @default("draft") // draft, running, paused, completed, failed
+  fromNumber  String // phone number to call from
+  callbackUrl String? // TwiML URL for outbound calls (defaults to /api/voice/incoming)
 
   startedAt   DateTime?
   completedAt DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  businessId  String
-  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  agentId     String?
-  agent       Agent?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentId String?
+  agent   Agent?  @relation(fields: [agentId], references: [id], onDelete: SetNull)
 
-  contacts    CampaignContact[]
+  contacts CampaignContact[]
 }
 
 model CampaignContact {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   phoneNumber String
   name        String?
-  metadata    Json?    // arbitrary extra data (email, custom fields, etc.)
+  metadata    Json? // arbitrary extra data (email, custom fields, etc.)
 
   // Call outcome for this contact
-  callSid     String?
-  status      String   @default("pending") // pending, calling, completed, failed, busy, no-answer
-  callId      String?  // FK to Call record once the call is created
-  attempts    Int      @default(0)
+  callSid       String?
+  status        String    @default("pending") // pending, calling, completed, failed, busy, no-answer
+  callId        String? // FK to Call record once the call is created
+  attempts      Int       @default(0)
   lastAttemptAt DateTime?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  campaignId  String
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }
 
 // ============================================
@@ -651,17 +651,17 @@ model CampaignContact {
 // ============================================
 
 model AgentKnowledge {
-  id          String   @id @default(cuid())
-  agentId     String
-  title       String
-  source      String   @default("text") // text, url, pdf
-  sourceUrl   String?
-  content     String   @db.Text
+  id        String   @id @default(cuid())
+  agentId   String
+  title     String
+  source    String   @default("text") // text, url, pdf
+  sourceUrl String?
+  content   String   @db.Text
   // Lightweight bag-of-words index for cheap retrieval (no vector DB required).
-  tokens      String[] @default([])
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  tokens    String[] @default([])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([agentId])
 }
@@ -671,17 +671,17 @@ model AgentKnowledge {
 // ============================================
 
 model AiResult {
-  id          String   @id @default(cuid())
-  feature     String
-  businessId  String?
-  userId      String?
-  callId      String?
-  model       String
-  input       Json
-  output      Json
-  tokens      Int?
-  durationMs  Int?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  feature    String
+  businessId String?
+  userId     String?
+  callId     String?
+  model      String
+  input      Json
+  output     Json
+  tokens     Int?
+  durationMs Int?
+  createdAt  DateTime @default(now())
 
   @@index([businessId, feature])
   @@index([feature, createdAt])
@@ -719,29 +719,29 @@ model EmailVerificationToken {
 
 // Voice clone enrollment with mandatory consent gate
 model VsEnrollment {
-  id                 String   @id @default(cuid())
-  businessId         String
-  subjectId          String                         // internal user/contact id
-  subjectName        String
-  displayName        String?
-  status             String   @default("pending")   // pending, active, suspended, revoked
-  consentGrantedAt   DateTime?                      // NULL = consent not yet given
-  consentVersion     String?                        // version of consent doc agreed to
-  idDocumentRef      String?                        // reference to verified ID doc
-  enrollmentNotes    String?  @db.Text
-  qualityScore       Float?                         // 0-1 overall enrollment quality
-  fidelityScore      Float?                         // 0-1 predicted clone fidelity
-  misusRiskScore     Float?                         // 0-1 misuse risk
-  watermarkStrength  String?  @default("medium")    // low, medium, high
-  isArchived         Boolean  @default(false)
-  archivedAt         DateTime?
-  aiSummary          String?  @db.Text
-  metadata           Json?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String    @id @default(cuid())
+  businessId        String
+  subjectId         String // internal user/contact id
+  subjectName       String
+  displayName       String?
+  status            String    @default("pending") // pending, active, suspended, revoked
+  consentGrantedAt  DateTime? // NULL = consent not yet given
+  consentVersion    String? // version of consent doc agreed to
+  idDocumentRef     String? // reference to verified ID doc
+  enrollmentNotes   String?   @db.Text
+  qualityScore      Float? // 0-1 overall enrollment quality
+  fidelityScore     Float? // 0-1 predicted clone fidelity
+  misusRiskScore    Float? // 0-1 misuse risk
+  watermarkStrength String?   @default("medium") // low, medium, high
+  isArchived        Boolean   @default(false)
+  archivedAt        DateTime?
+  aiSummary         String?   @db.Text
+  metadata          Json?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  samples            VsEnrollmentSample[]
-  consentEvents      VsConsentEvent[]
+  samples       VsEnrollmentSample[]
+  consentEvents VsConsentEvent[]
 
   @@index([businessId])
   @@index([businessId, subjectId])
@@ -749,44 +749,44 @@ model VsEnrollment {
 }
 
 model VsEnrollmentSample {
-  id             String   @id @default(cuid())
-  enrollmentId   String
-  enrollment     VsEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  sampleUrl      String
-  durationSecs   Float?
-  qualityScore   Float?   // 0-1
-  language       String   @default("en")
-  noiseLevel     String?  // low, medium, high
-  sampleType     String   @default("read-aloud") // read-aloud, conversational, phoneme-set
-  isAccepted     Boolean  @default(false)
+  id              String       @id @default(cuid())
+  enrollmentId    String
+  enrollment      VsEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  sampleUrl       String
+  durationSecs    Float?
+  qualityScore    Float? // 0-1
+  language        String       @default("en")
+  noiseLevel      String? // low, medium, high
+  sampleType      String       @default("read-aloud") // read-aloud, conversational, phoneme-set
+  isAccepted      Boolean      @default(false)
   rejectionReason String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   @@index([enrollmentId])
 }
 
 // Append-only consent ledger
 model VsConsentEvent {
-  id             String   @id @default(cuid())
+  id             String        @id @default(cuid())
   businessId     String
   enrollmentId   String?
   enrollment     VsEnrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
   subjectId      String
-  eventType      String   // granted, revoked, updated, witnessed, expired
-  scope          String   // tts, avatar, dubbing, all
+  eventType      String // granted, revoked, updated, witnessed, expired
+  scope          String // tts, avatar, dubbing, all
   consentVersion String
   witnessId      String?
   witnessName    String?
   ipAddress      String?
   userAgent      String?
-  documentHash   String?                           // SHA-256 of consent doc
+  documentHash   String? // SHA-256 of consent doc
   expiresAt      DateTime?
   retentionUntil DateTime?
-  notes          String?  @db.Text
-  isTampered     Boolean  @default(false)
-  ledgerHash     String?                           // chained hash for tamper detection
-  createdAt      DateTime @default(now())           // immutable — no updatedAt
+  notes          String?       @db.Text
+  isTampered     Boolean       @default(false)
+  ledgerHash     String? // chained hash for tamper detection
+  createdAt      DateTime      @default(now()) // immutable — no updatedAt
 
   @@index([businessId, subjectId])
   @@index([enrollmentId])
@@ -795,31 +795,31 @@ model VsConsentEvent {
 
 // TTS style/emotion/prosody control
 model VsTtsStyle {
-  id              String   @id @default(cuid())
-  businessId      String
-  name            String
-  description     String?
-  baseVoiceId     String?
-  enrollmentId    String?                          // optional clone source
-  emotion         String   @default("neutral")    // neutral, happy, sad, angry, fear, surprise
-  pace            String   @default("medium")     // slow, medium, fast
-  pitch           String   @default("medium")     // low, medium, high
-  volume          String   @default("medium")
-  emphasis        String?                         // word-level SSML emphasis hints
-  pauseStrategy   String?
-  ssmlTemplate    String?  @db.Text
-  brand           String?
-  qualityScore    Float?
+  id               String    @id @default(cuid())
+  businessId       String
+  name             String
+  description      String?
+  baseVoiceId      String?
+  enrollmentId     String? // optional clone source
+  emotion          String    @default("neutral") // neutral, happy, sad, angry, fear, surprise
+  pace             String    @default("medium") // slow, medium, fast
+  pitch            String    @default("medium") // low, medium, high
+  volume           String    @default("medium")
+  emphasis         String? // word-level SSML emphasis hints
+  pauseStrategy    String?
+  ssmlTemplate     String?   @db.Text
+  brand            String?
+  qualityScore     Float?
   consistencyScore Float?
-  naturalnessPred Float?
-  engagementPred  Float?
-  isActive        Boolean  @default(true)
-  isArchived      Boolean  @default(false)
-  archivedAt      DateTime?
-  aiSummary       String?  @db.Text
-  metadata        Json?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  naturalnessPred  Float?
+  engagementPred   Float?
+  isActive         Boolean   @default(true)
+  isArchived       Boolean   @default(false)
+  archivedAt       DateTime?
+  aiSummary        String?   @db.Text
+  metadata         Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([businessId])
   @@index([businessId, name])
@@ -827,14 +827,14 @@ model VsTtsStyle {
 
 // Avatar render jobs
 model VsAvatarRenderJob {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   businessId       String
   name             String
   description      String?
-  enrollmentId     String?                        // source voice clone / likeness
-  assetType        String   @default("3d")        // 2d, 3d, animated-still
-  renderTier       String   @default("standard")  // draft, standard, premium
-  status           String   @default("queued")    // queued, processing, completed, failed, cancelled
+  enrollmentId     String? // source voice clone / likeness
+  assetType        String    @default("3d") // 2d, 3d, animated-still
+  renderTier       String    @default("standard") // draft, standard, premium
+  status           String    @default("queued") // queued, processing, completed, failed, cancelled
   inputAssetUrl    String?
   outputAssetUrl   String?
   previewUrl       String?
@@ -846,17 +846,17 @@ model VsAvatarRenderJob {
   actualCostUsd    Float?
   fidelityScore    Float?
   pipelineHealth   Float?
-  failureCause     String?  @db.Text
-  licensingOk      Boolean  @default(false)
+  failureCause     String?   @db.Text
+  licensingOk      Boolean   @default(false)
   cacheKey         String?
-  isArchived       Boolean  @default(false)
+  isArchived       Boolean   @default(false)
   archivedAt       DateTime?
-  aiSummary        String?  @db.Text
+  aiSummary        String?   @db.Text
   metadata         Json?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
-  lipsyncJobs      VsLipsyncJob[]
+  lipsyncJobs VsLipsyncJob[]
 
   @@index([businessId])
   @@index([businessId, status])
@@ -864,35 +864,35 @@ model VsAvatarRenderJob {
 
 // Lipsync alignment jobs
 model VsLipsyncJob {
-  id                  String   @id @default(cuid())
-  businessId          String
-  name                String
-  description         String?
-  renderJobId         String?
-  renderJob           VsAvatarRenderJob? @relation(fields: [renderJobId], references: [id], onDelete: SetNull)
-  audioUrl            String
-  videoUrl            String?
-  outputUrl           String?
-  language            String   @default("en")
-  frameRate           Float?
-  status              String   @default("queued")  // queued, processing, completed, failed
-  driftMs             Float?
-  qualityScore        Float?
-  naturalLookScore    Float?
-  mismatchClass       String?
-  occludedMouth       Boolean  @default(false)
+  id                   String             @id @default(cuid())
+  businessId           String
+  name                 String
+  description          String?
+  renderJobId          String?
+  renderJob            VsAvatarRenderJob? @relation(fields: [renderJobId], references: [id], onDelete: SetNull)
+  audioUrl             String
+  videoUrl             String?
+  outputUrl            String?
+  language             String             @default("en")
+  frameRate            Float?
+  status               String             @default("queued") // queued, processing, completed, failed
+  driftMs              Float?
+  qualityScore         Float?
+  naturalLookScore     Float?
+  mismatchClass        String?
+  occludedMouth        Boolean            @default(false)
   mouthShapeDifficulty String?
-  renderCorrectionSec Float?
-  visemeTrackUrl      String?
-  visemeLanguagePack  String?
-  manualTouchUpNeeded Boolean  @default(false)
-  qaReport            String?  @db.Text
-  isArchived          Boolean  @default(false)
-  archivedAt          DateTime?
-  aiSummary           String?  @db.Text
-  metadata            Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  renderCorrectionSec  Float?
+  visemeTrackUrl       String?
+  visemeLanguagePack   String?
+  manualTouchUpNeeded  Boolean            @default(false)
+  qaReport             String?            @db.Text
+  isArchived           Boolean            @default(false)
+  archivedAt           DateTime?
+  aiSummary            String?            @db.Text
+  metadata             Json?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
 
   @@index([businessId])
   @@index([renderJobId])
@@ -900,35 +900,35 @@ model VsLipsyncJob {
 
 // Multilingual dubbing jobs
 model VsDubbingJob {
-  id                    String   @id @default(cuid())
-  businessId            String
-  name                  String
-  description           String?
-  enrollmentId          String?                     // voice to preserve
-  sourceLanguage        String   @default("en")
-  targetLanguages       String[]
-  sourceAudioUrl        String
-  sourceScriptUrl       String?
-  status                String   @default("queued") // queued, processing, completed, failed, cancelled
-  difficultyClass       String?
+  id                     String    @id @default(cuid())
+  businessId             String
+  name                   String
+  description            String?
+  enrollmentId           String? // voice to preserve
+  sourceLanguage         String    @default("en")
+  targetLanguages        String[]
+  sourceAudioUrl         String
+  sourceScriptUrl        String?
+  status                 String    @default("queued") // queued, processing, completed, failed, cancelled
+  difficultyClass        String?
   voicePreservationScore Float?
-  culturalFitScore      Float?
-  acceptanceScore       Float?
-  dubQualityScore       Float?
-  timingFitOk           Boolean  @default(false)
-  emotionMismatch       Boolean  @default(false)
-  targetMarket          String?
-  glossaryUrl           String?
-  dubScriptUrl          String?
-  outputManifestUrl     String?
-  voiceActorFallback    String?
-  backTranslationCheck  Boolean  @default(false)
-  isArchived            Boolean  @default(false)
-  archivedAt            DateTime?
-  aiSummary             String?  @db.Text
-  metadata              Json?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  culturalFitScore       Float?
+  acceptanceScore        Float?
+  dubQualityScore        Float?
+  timingFitOk            Boolean   @default(false)
+  emotionMismatch        Boolean   @default(false)
+  targetMarket           String?
+  glossaryUrl            String?
+  dubScriptUrl           String?
+  outputManifestUrl      String?
+  voiceActorFallback     String?
+  backTranslationCheck   Boolean   @default(false)
+  isArchived             Boolean   @default(false)
+  archivedAt             DateTime?
+  aiSummary              String?   @db.Text
+  metadata               Json?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
 
   @@index([businessId])
   @@index([status])
@@ -936,33 +936,252 @@ model VsDubbingJob {
 
 // C2PA-style provenance + watermark tracking
 model VsProvenanceRecord {
-  id                  String   @id @default(cuid())
-  businessId          String
-  assetUrl            String
-  assetType           String   @default("audio")   // audio, video, image
-  originClaim         String?
-  c2paManifestUrl     String?
-  manifestValid       Boolean  @default(false)
-  signerTrust         String?
-  isTampered          Boolean  @default(false)
-  watermarkStrength   String   @default("medium")   // none, low, medium, high
-  watermarkType       String   @default("audible")  // audible, inaudible, metadata
-  watermarkPayload    String?
-  robustnessScore     Float?
-  detectionSurvival   Float?
+  id                    String    @id @default(cuid())
+  businessId            String
+  assetUrl              String
+  assetType             String    @default("audio") // audio, video, image
+  originClaim           String?
+  c2paManifestUrl       String?
+  manifestValid         Boolean   @default(false)
+  signerTrust           String?
+  isTampered            Boolean   @default(false)
+  watermarkStrength     String    @default("medium") // none, low, medium, high
+  watermarkType         String    @default("audible") // audible, inaudible, metadata
+  watermarkPayload      String?
+  robustnessScore       Float?
+  detectionSurvival     Float?
   attributionConfidence Float?
-  trustScore          Float?
-  chainOfCustody      Json?
-  redactionEvents     Json?
-  revokedAt           DateTime?
-  publicCardUrl       String?
-  additionalMetadata  Json?
-  isArchived          Boolean  @default(false)
-  archivedAt          DateTime?
-  aiSummary           String?  @db.Text
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  trustScore            Float?
+  chainOfCustody        Json?
+  redactionEvents       Json?
+  revokedAt             DateTime?
+  publicCardUrl         String?
+  additionalMetadata    Json?
+  isArchived            Boolean   @default(false)
+  archivedAt            DateTime?
+  aiSummary             String?   @db.Text
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([businessId])
   @@index([businessId, assetType])
+}
+
+// ============================================
+// GOVERNED MEDIA PRODUCTION PIPELINE
+// ============================================
+
+model MediaAsset {
+  id               String    @id @default(cuid())
+  businessId       String
+  objectKey        String
+  state            String    @default("PENDING_UPLOAD")
+  kind             String
+  originalFilename String
+  mimeType         String
+  sizeBytes        BigInt
+  sha256           String
+  storageProvider  String
+  objectUri        String?
+  durationMs       Int?
+  codec            String?
+  probeMetadata    Json?
+  provenance       Json
+  quarantinedAt    DateTime?
+  quarantineReason String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([businessId, objectKey])
+  @@index([businessId, state, createdAt])
+  @@index([businessId, sha256])
+}
+
+model MediaUploadSession {
+  id              String    @id @default(cuid())
+  businessId      String
+  assetId         String
+  idempotencyKey  String
+  gatewayTicketId String    @unique
+  status          String    @default("CREATED")
+  uploadUrlHash   String?
+  expiresAt       DateTime
+  completedAt     DateTime?
+  error           Json?
+  createdAt       DateTime  @default(now())
+
+  @@unique([businessId, idempotencyKey])
+  @@index([assetId, status])
+  @@index([status, expiresAt])
+}
+
+model MediaTimeline {
+  id             String   @id @default(cuid())
+  businessId     String
+  name           String
+  slug           String
+  currentVersion Int      @default(0)
+  state          String   @default("DRAFT")
+  createdBy      String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([businessId, slug])
+  @@index([businessId, state, updatedAt])
+}
+
+model MediaTimelineVersion {
+  id               String   @id @default(cuid())
+  businessId       String
+  timelineId       String
+  version          Int
+  editDecisionList Json
+  durationMs       Int
+  checksum         String
+  createdBy        String
+  changeNote       String?
+  createdAt        DateTime @default(now())
+
+  @@unique([timelineId, version])
+  @@index([businessId, timelineId, createdAt])
+}
+
+model MediaPreviewApproval {
+  id                String    @id @default(cuid())
+  businessId        String
+  timelineVersionId String
+  previewAssetId    String
+  status            String    @default("PENDING")
+  requestedBy       String
+  reviewedBy        String?
+  comment           String?
+  requestedAt       DateTime  @default(now())
+  decidedAt         DateTime?
+
+  @@index([businessId, timelineVersionId, status])
+  @@index([previewAssetId])
+}
+
+model MediaCaptionTrack {
+  id         String   @id @default(cuid())
+  businessId String
+  assetId    String
+  language   String
+  label      String
+  format     String   @default("WEBVTT")
+  objectUri  String
+  cuesDigest String
+  cueCount   Int
+  validated  Boolean  @default(false)
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([assetId, language, format])
+  @@index([businessId, assetId])
+}
+
+model MediaExportPreset {
+  id             String   @id @default(cuid())
+  businessId     String
+  name           String
+  format         String
+  config         Json
+  accessible     Boolean  @default(true)
+  captionsBurned Boolean  @default(false)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([businessId, name])
+  @@index([businessId, isActive])
+}
+
+model MediaPipelineJob {
+  id                String    @id @default(cuid())
+  businessId        String
+  inputAssetId      String?
+  timelineVersionId String?
+  outputAssetId     String?
+  previewApprovalId String?
+  jobType           String
+  preset            Json?
+  status            String    @default("QUEUED")
+  idempotencyKey    String
+  attempt           Int       @default(0)
+  maxAttempts       Int       @default(3)
+  availableAt       DateTime  @default(now())
+  leaseOwner        String?
+  leaseExpiresAt    DateTime?
+  cancelRequestedAt DateTime?
+  providersTried    String[]
+  providerId        String?
+  providerJobId     String?
+  providerReceipt   Json?
+  error             Json?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([businessId, idempotencyKey])
+  @@unique([providerId, providerJobId])
+  @@index([status, availableAt])
+  @@index([businessId, createdAt])
+  @@index([inputAssetId, status])
+  @@index([timelineVersionId, status])
+}
+
+model MediaJobAttempt {
+  id            String    @id @default(cuid())
+  jobId         String
+  attempt       Int
+  providerId    String
+  requestDigest String
+  status        String
+  providerJobId String?
+  errorCode     String?
+  retryable     Boolean   @default(false)
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@unique([jobId, attempt])
+  @@index([providerId, startedAt])
+}
+
+model MediaProvider {
+  id              String   @id @default(cuid())
+  businessId      String
+  name            String
+  providerKind    String
+  capabilities    String[]
+  configEncrypted String
+  status          String   @default("INACTIVE")
+  priority        Int      @default(100)
+  costWeight      Float    @default(1)
+  maxInputBytes   BigInt
+  dailyQuota      Int
+  usageDate       String?
+  usedToday       Int      @default(0)
+  lastError       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([businessId, name])
+  @@index([businessId, status, priority])
+}
+
+model MediaProviderEvent {
+  id              String    @id @default(cuid())
+  providerId      String
+  eventId         String
+  providerJobId   String
+  eventType       String
+  payloadDigest   String
+  signatureDigest String
+  mediaJobId      String?
+  receivedAt      DateTime  @default(now())
+  processedAt     DateTime?
+
+  @@unique([providerId, eventId])
+  @@index([mediaJobId, receivedAt])
 }

@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -13,7 +13,7 @@ export async function GET(
     }
 
     const call = await prisma.call.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
       include: {
         agent: { select: { id: true, name: true } },
         phoneNumber: { select: { id: true, number: true, displayName: true } },

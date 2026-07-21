@@ -4,9 +4,16 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  if (process.env.ALLOW_DEMO_SEED !== 'true') {
+    throw new Error('Refusing demo seed without ALLOW_DEMO_SEED=true');
+  }
+  const demoPassword = process.env.DEMO_PASSWORD;
+  if (!demoPassword || demoPassword.length < 12) {
+    throw new Error('DEMO_PASSWORD must contain at least 12 characters');
+  }
   console.log('Seeding database with comprehensive data...');
 
-  const hashedPassword = await bcrypt.hash('demo123', 10);
+  const hashedPassword = await bcrypt.hash(demoPassword, 12);
 
   // ============================================
   // 1. VOICES (15+ items)
@@ -797,9 +804,7 @@ async function main() {
   console.log('\n========================================');
   console.log('Seeding completed successfully!');
   console.log('========================================');
-  console.log('\nDemo credentials:');
-  console.log('  Admin: admin@aivoiceagent.com / demo123');
-  console.log('  Manager: manager@aivoiceagent.com / demo123');
+  console.log('\nDemo accounts created with the password supplied through DEMO_PASSWORD.');
   console.log('\nData summary:');
   console.log(`  - ${voicesData.length} voices`);
   console.log(`  - ${businesses.length} businesses`);

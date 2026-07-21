@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "*")
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -19,7 +19,7 @@ export function corsHeaders(origin?: string | null): Record<string, string> {
       allow && origin ? origin : ALLOWED_ORIGINS.includes("*") ? "*" : "",
     "Access-Control-Allow-Methods": "GET,POST,PUT,DELETE,PATCH,OPTIONS",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Api-Key, X-User-Id, X-Twilio-Signature",
+      "Content-Type, Authorization, Idempotency-Key, X-Api-Key, X-User-Id, X-Twilio-Signature, X-Media-Signature, X-Media-Provider-Signature",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   };

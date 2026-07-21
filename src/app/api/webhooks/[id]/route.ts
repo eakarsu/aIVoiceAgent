@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -15,7 +15,7 @@ export async function PUT(
     const body = await request.json();
 
     const existing = await prisma.webhook.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existing) {
@@ -23,7 +23,7 @@ export async function PUT(
     }
 
     const webhook = await prisma.webhook.update({
-      where: { id: params.id },
+      where: { id: (await params).id },
       data: {
         name: body.name,
         url: body.url,
@@ -44,7 +44,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -53,7 +53,7 @@ export async function DELETE(
     }
 
     const existing = await prisma.webhook.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existing) {
@@ -61,7 +61,7 @@ export async function DELETE(
     }
 
     await prisma.webhook.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "Webhook deleted successfully" });

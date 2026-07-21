@@ -16,18 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Mic,
-  Languages,
-  MessageSquare,
-  Heart,
-  Globe,
-  GraduationCap,
-  Stethoscope,
-  Video,
-  AlignCenter,
-  Fingerprint,
-  ShieldCheck,
-  Volume2,
+  Film,
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
@@ -43,41 +32,10 @@ const navigation = [
   { name: "Integrations", href: "/integrations", icon: Plug },
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Settings", href: "/settings", icon: Settings },
-
-  // // === Batch 08 Gaps & Frontend Mounts ===
-  { name: 'Long-term contextual conversation memory across se...', href: '/cf-long-term-contextual-conversation-memory-across-sessions' },
-  { name: 'Agent performance scoring grading on tone, accurac...', href: '/cf-agent-performance-scoring-grading-on-tone-accuracy-sentiment' },
-  { name: 'Multi-language code-switching for mixed conversati...', href: '/cf-multi-language-code-switching-for-mixed-conversations' },
-  { name: 'Real-time sentiment intervention coaching agents m...', href: '/cf-real-time-sentiment-intervention-coaching-agents-mid-call' },
-  { name: 'Custom voice cloning for branded voice characteris...', href: '/cf-custom-voice-cloning-for-branded-voice-characteristics' },
-  { name: 'A/B testing of script variants with statistical si...', href: '/cf-a-b-testing-of-script-variants-with-statistical' },
-  { name: 'AI coverage is comprehensive (~63 endpoints across...', href: '/gap-ai-coverage-is-comprehensive-63-endpoints-across-multi-language' },
-  { name: 'No real-time voice biometrics for caller verificat...', href: '/gap-no-real-time-voice-biometrics-for-caller-verification' },
-  { name: 'No predictive call outcome scoring before transfer', href: '/gap-no-predictive-call-outcome-scoring-before-transfer' },
-  { name: 'No SIP/non-Twilio telephony backend (currently sin...', href: '/gap-no-sip-non-twilio-telephony-backend-currently-single-provider' },
-  { name: 'Limited CRM integration depth (integrations layer...', href: '/gap-limited-crm-integration-depth-integrations-layer-exists-but' },
-  { name: 'No conversation transcript full-text search', href: '/gap-no-conversation-transcript-full-text-search' },
-  { name: 'Limited billing/metering granularity for AI usage', href: '/gap-limited-billing-metering-granularity-for-ai-usage' },
-];
-
-const aiFeatures = [
-  { name: "Speech Enhancer", href: "/ai/speech-enhancer", icon: Sparkles },
-  { name: "Accent Adapter", href: "/ai/accent-adapter", icon: Mic },
-  { name: "Intent Classifier", href: "/ai/intent-classifier", icon: MessageSquare },
-  { name: "Emotion Detector", href: "/ai/emotion-detector", icon: Heart },
-  { name: "Multi-language", href: "/ai/multi-language", icon: Globe },
-  { name: "Translator", href: "/ai/translator", icon: Languages },
-  { name: "Hearing Test", href: "/ai/hearing-test", icon: Stethoscope },
 ];
 
 const voiceStudioNavigation = [
-  { name: "Voice Clone Enroll", href: "/voicestudio/voiceCloneEnroll", icon: Mic },
-  { name: "Consent Ledger", href: "/voicestudio/consentLedger", icon: ShieldCheck },
-  { name: "TTS Style Control", href: "/voicestudio/ttsStyleControl", icon: Volume2 },
-  { name: "Avatar Render", href: "/voicestudio/avatarRender", icon: Video },
-  { name: "Lipsync Engine", href: "/voicestudio/lipsyncEngine", icon: AlignCenter },
-  { name: "Multilingual Dubbing", href: "/voicestudio/multilingualDubbing", icon: Languages },
-  { name: "Watermark Provenance", href: "/voicestudio/watermarkProvenance", icon: Fingerprint },
+  { name: "Media Production", href: "/media-production", icon: Film },
 ];
 
 const adminNavigation = [
@@ -157,34 +115,6 @@ export function Sidebar() {
           </div>
         )}
         {voiceStudioNavigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                collapsed && "justify-center"
-              )}
-              title={collapsed ? item.name : undefined}
-            >
-              {(() => { const Icon = item.icon || Sparkles; return <Icon className={cn("h-5 w-5", !collapsed && "mr-3")} />; })()}
-              {!collapsed && item.name}
-            </Link>
-          );
-        })}
-
-        {/* AI Features Section */}
-        <div className="my-4 border-t" />
-        {!collapsed && (
-          <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            AI Features
-          </div>
-        )}
-        {aiFeatures.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link

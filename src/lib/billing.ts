@@ -72,28 +72,30 @@ export async function recordUsage(opts: {
     },
   });
 
-  // Optional: report to Stripe usage records (no-op if not configured).
+  // Optional: report incremental usage through Stripe Billing meter events.
   if (process.env.STRIPE_SECRET_KEY && process.env.STRIPE_USAGE_REPORTING === "true") {
     try {
-      // Lazy import so build doesn't require stripe pkg
-      // @ts-ignore - Stripe pkg may not be installed; guarded.
       const Stripe = (await import("stripe")).default;
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: "2024-09-30.acacia" as any,
-      });
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-      // Map businessId -> stripe subscription item id via env JSON map.
-      const subMap = process.env.STRIPE_SUB_ITEM_MAP
-        ? JSON.parse(process.env.STRIPE_SUB_ITEM_MAP)
+      // Map businessId -> Stripe customer id without storing customer credentials.
+      const customerMap = process.env.STRIPE_CUSTOMER_MAP
+        ? JSON.parse(process.env.STRIPE_CUSTOMER_MAP)
         : {};
-      const itemId = subMap[opts.businessId];
-      if (itemId) {
-        if (opts.callMinutes) {
-          await stripe.subscriptionItems.createUsageRecord(itemId, {
-            quantity: opts.callMinutes,
-            timestamp: Math.floor(Date.now() / 1000),
-            action: "increment",
-          });
+      const customerId = customerMap[opts.businessId];
+      if (customerId) {
+        const events = [
+          [process.env.STRIPE_CALL_MINUTES_EVENT_NAME, opts.callMinutes],
+          [process.env.STRIPE_SMS_EVENT_NAME, opts.smsCount],
+          [process.env.STRIPE_AI_TOKENS_EVENT_NAME, opts.aiTokens],
+        ] as const;
+        for (const [eventName, quantity] of events) {
+          if (eventName && quantity) {
+            await stripe.billing.meterEvents.create({
+              event_name: eventName,
+              payload: { stripe_customer_id: customerId, value: String(quantity) },
+            });
+          }
         }
       }
     } catch (err) {

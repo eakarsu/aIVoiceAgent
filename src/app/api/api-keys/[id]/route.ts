@@ -4,7 +4,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const businessId = await getCurrentBusinessId();
@@ -13,7 +13,7 @@ export async function DELETE(
     }
 
     const existing = await prisma.apiKey.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
     });
 
     if (!existing) {
@@ -21,7 +21,7 @@ export async function DELETE(
     }
 
     await prisma.apiKey.delete({
-      where: { id: params.id },
+      where: { id: (await params).id },
     });
 
     return NextResponse.json({ message: "API key deleted successfully" });

@@ -7,7 +7,7 @@ import { getCurrentBusinessId } from "@/lib/session";
 import { makeOutboundCall } from "@/services/twilio";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function POST(_request: Request, { params }: RouteContext) {
@@ -19,7 +19,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
 
     // Load the campaign (must belong to this business)
     const campaign = await prisma.campaign.findFirst({
-      where: { id: params.id, businessId },
+      where: { id: (await params).id, businessId },
       include: {
         contacts: {
           where: { status: "pending" },

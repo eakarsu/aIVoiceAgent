@@ -21,7 +21,7 @@ function getRateLimitResult(key: string, maxRequests: number, windowMs: number) 
   return { success: true, remaining: maxRequests - entry.count };
 }
 
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "*")
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -41,7 +41,7 @@ function applyCors(res: NextResponse, origin: string | null) {
   );
   res.headers.set(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Api-Key, X-User-Id, X-Twilio-Signature"
+    "Content-Type, Authorization, Idempotency-Key, X-Api-Key, X-User-Id, X-Twilio-Signature, X-Media-Signature, X-Media-Provider-Signature"
   );
   res.headers.set("Access-Control-Max-Age", "86400");
   res.headers.set("Vary", "Origin");
@@ -73,6 +73,19 @@ export function middleware(request: NextRequest) {
   const origin = request.headers.get("origin");
   const ip =
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+
+  const retiredPrototype =
+    pathname.startsWith('/api/gap-') ||
+    pathname.startsWith('/api/voicestudio/') ||
+    pathname.startsWith('/api/ai/') ||
+    pathname.startsWith('/gap-') ||
+    pathname.startsWith('/cf-') ||
+    pathname.startsWith('/voicestudio/') ||
+    pathname.startsWith('/ai/');
+  if (retiredPrototype) {
+    const res = NextResponse.json({ error: 'Generated simulation retired; use /api/media-pipeline for governed media production' }, { status: 410 });
+    applyCors(res, origin); applySecurityHeaders(res); return res;
+  }
 
   // CORS preflight
   if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
@@ -123,5 +136,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/api/:path*", "/gap-:path*", "/cf-:path*", "/voicestudio/:path*", "/ai/:path*"],
 };
