@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-project_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+launcher_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+set -a
+source "$launcher_root/.env"
+set +a
+project_root="$launcher_root"
 if [ "${NODE_ENV:-development}" = "test" ] && [ -n "${RUNTIME_PROJECT_SOURCE:-}" ] && [ -d "$RUNTIME_PROJECT_SOURCE" ]; then
   project_root="$RUNTIME_PROJECT_SOURCE"
 fi
@@ -69,14 +73,39 @@ if [ ! -d "$project_root/node_modules" ]; then
   echo "Dependencies are missing. Install them in a separate reviewed step."
   exit 1
 fi
-if lsof -nP -iTCP:"$BACKEND_PORT" -sTCP:LISTEN >/dev/null 2>&1; then
-  echo "Assigned port $BACKEND_PORT is occupied"
-  exit 1
-fi
+for assigned_port in "$BACKEND_PORT" "$FRONTEND_PORT"; do
+  if lsof -nP -iTCP:"$assigned_port" -sTCP:LISTEN >/dev/null 2>&1; then echo "Assigned port $assigned_port is occupied"; exit 1; fi
+done
+
+# NextAuth must sign and validate cookies against the application listener. The
+# second assigned port is a transparent UI proxy, not a separate auth origin.
+NEXTAUTH_URL="http://127.0.0.1:$BACKEND_PORT"
+CORS_ORIGINS="$NEXTAUTH_URL,http://127.0.0.1:$FRONTEND_PORT"
+export NEXTAUTH_URL CORS_ORIGINS
 
 cd "$project_root"
-if [ "${NODE_ENV:-development}" = "production" ]; then
-  exec npm run start -- -H 127.0.0.1 -p "$BACKEND_PORT"
+case "${MIGRATE_ON_START:-0}" in
+  1|true)
+    # The acceptance bootstrap may have created the schema with `prisma db
+    # push`, which intentionally has no migration-history table. Reconcile the
+    # checked-in schema idempotently in either that case or a migrated database.
+    npx prisma db push --skip-generate
+    ;;
+esac
+npm run create-admin
+runtime_node_env="${NODE_ENV:-development}"
+if [ "$runtime_node_env" = "test" ] && [ -n "${RUNTIME_PROJECT_SOURCE:-}" ]; then
+  NODE_ENV=production npm run build
+  run_script=start
+  runtime_node_env=production
+elif [ "$runtime_node_env" = "production" ]; then
+  run_script=start
 else
-  exec npm run dev -- -H 127.0.0.1 -p "$BACKEND_PORT"
+  run_script=dev
 fi
+NODE_ENV="$runtime_node_env" npm run "$run_script" -- -H 127.0.0.1 -p "$BACKEND_PORT" & app_pid=$!
+trap 'kill "${app_pid:-}" "${proxy_pid:-}" 2>/dev/null || true; wait "${app_pid:-}" "${proxy_pid:-}" 2>/dev/null || true' INT TERM EXIT
+for attempt in {1..480}; do curl --max-time 2 -sS "http://127.0.0.1:$BACKEND_PORT/api/auth/session" >/dev/null 2>&1 && break; kill -0 "$app_pid" 2>/dev/null||{ wait "$app_pid"||true; echo "Application exited before startup"; exit 1; }; sleep 0.25; done
+curl --max-time 5 -sS "http://127.0.0.1:$BACKEND_PORT/api/auth/session" >/dev/null||{ echo "Application did not become ready"; exit 1; }
+RUNTIME_PROXY_PORT="$FRONTEND_PORT" RUNTIME_PROXY_TARGET_PORT="$BACKEND_PORT" node "$project_root/_runtime-proxy.mjs" & proxy_pid=$!
+wait "$app_pid" "$proxy_pid"

@@ -14,25 +14,27 @@ async function main() {
   if (!email || !password || password.length < 12) {
     throw new Error('PROVISION_ADMIN_EMAIL and a password of at least 12 characters are required');
   }
-
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    throw new Error(`Refusing to overwrite existing account ${email}`);
+  const passwordHashRounds = Number(process.env.PASSWORD_HASH_ROUNDS || '12');
+  if (!Number.isInteger(passwordHashRounds) || passwordHashRounds < 8 || passwordHashRounds > 14) {
+    throw new Error('PASSWORD_HASH_ROUNDS must be an integer between 8 and 14');
   }
 
   const business = await prisma.business.upsert({
     where: { email },
-    update: {},
+    update: { name: process.env.PROVISION_COMPANY_NAME?.trim() || 'Initial Company' },
     create: {
       name: process.env.PROVISION_COMPANY_NAME?.trim() || 'Initial Company',
       email,
       timezone: 'UTC',
     },
   });
-  await prisma.user.create({
-    data: {
+  const passwordHash = await bcrypt.hash(password, passwordHashRounds);
+  await prisma.user.upsert({
+    where: { email },
+    update: { password: passwordHash, name, role: UserRole.ADMIN, isActive: true, businessId: business.id },
+    create: {
       email,
-      password: await bcrypt.hash(password, 12),
+      password: passwordHash,
       name,
       role: UserRole.ADMIN,
       businessId: business.id,

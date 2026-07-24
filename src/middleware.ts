@@ -77,7 +77,7 @@ export function middleware(request: NextRequest) {
   const retiredPrototype =
     pathname.startsWith('/api/gap-') ||
     pathname.startsWith('/api/voicestudio/') ||
-    pathname.startsWith('/api/ai/') ||
+    (pathname.startsWith('/api/ai/') && pathname !== '/api/ai/long-term-memory') ||
     pathname.startsWith('/gap-') ||
     pathname.startsWith('/cf-') ||
     pathname.startsWith('/voicestudio/') ||
@@ -95,8 +95,10 @@ export function middleware(request: NextRequest) {
     return res;
   }
 
-  // Rate limit auth endpoints more strictly
-  if (pathname.startsWith("/api/auth/")) {
+  // Rate-limit credential submissions, not read-only NextAuth discovery and
+  // session checks used by health probes and signed-in clients.
+  if (request.method === "POST" &&
+      (pathname.startsWith("/api/auth/callback/") || pathname === "/api/auth/login")) {
     const key = `auth:${ip}`;
     const result = getRateLimitResult(key, 10, 15 * 60 * 1000);
     if (!result.success) {
