@@ -22,4 +22,3 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ assets: assets.map(safe) });
   } catch (error: any) { return NextResponse.json({ error: error.message, code: error.code }, { status: error.status || 422 }); }
 }
-

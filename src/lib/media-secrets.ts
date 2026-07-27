@@ -24,4 +24,3 @@ export function decryptMediaSecret<T extends Record<string, unknown>>(value: str
   const plaintext = Buffer.concat([decipher.update(Buffer.from(ciphertext, 'base64url')), decipher.final()]);
   return JSON.parse(plaintext.toString('utf8')) as T;
 }
-

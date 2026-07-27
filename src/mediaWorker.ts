@@ -7,4 +7,3 @@ const timer = setInterval(() => void tick().catch((error) => console.error('[med
 void tick().catch((error) => console.error('[media-worker]', error));
 async function shutdown() { clearInterval(timer); await prisma.$disconnect(); process.exit(0); }
 process.on('SIGTERM', shutdown); process.on('SIGINT', shutdown);
-
