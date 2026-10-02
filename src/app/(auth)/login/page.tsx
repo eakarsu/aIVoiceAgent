@@ -18,14 +18,30 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleDemoLogin = () => {
-    setEmail("admin@aivoiceagent.com");
-    setPassword("demo123");
-    toast({
-      title: "Demo Credentials",
-      description: "Credentials populated! Click Sign In to continue.",
-      variant: "default",
-    });
+  const handleDemoLogin = async () => {
+    const demoEmail = process.env.NEXT_PUBLIC_DEMO_EMAIL || "";
+    const demoPassword = process.env.NEXT_PUBLIC_DEMO_PASSWORD || "";
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    if (!demoEmail || !demoPassword) {
+      toast({
+        title: "Demo Credentials",
+        description: "Demo credentials are not configured.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const result = await signIn("credentials", { email: demoEmail, password: demoPassword, redirect: false });
+    if (result?.error) {
+      toast({
+        title: "Error",
+        description: "Invalid email or password",
+        variant: "destructive",
+      });
+      return;
+    }
+    router.push("/dashboard");
+    router.refresh();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
