@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import FullFormExamples from "@/components/ai/FullFormExamples";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -69,7 +70,6 @@ export default function SpeechEnhancerPage() {
     enhancementType: "clarity",
   });
   const [processing, setProcessing] = useState(false);
-  const [loadingSample, setLoadingSample] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const router = useRouter();
   const { toast } = useToast();
@@ -142,8 +142,7 @@ export default function SpeechEnhancerPage() {
     window.open("/api/export/pdf?model=speech-enhancer", "_blank");
   };
 
-  const loadSampleData = async () => {
-    setLoadingSample(true);
+  const loadSampleData = (index: number) => {
     const samples = [
       {
         title: "Customer Support Script",
@@ -164,24 +163,11 @@ export default function SpeechEnhancerPage() {
         enhancementType: "grammar",
       },
     ];
-    try {
-      const results = await Promise.all(
-        samples.map((sample) =>
-          fetch("/api/ai/speech-enhancer", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sample),
-          }).then((res) => (res.ok ? res.json() : null))
-        )
-      );
-      const newItems = results.filter(Boolean) as SpeechEnhancement[];
-      setItems((prev) => [...newItems.reverse(), ...prev]);
-      toast({ title: "Success", description: "Sample data loaded and processing started", variant: "success" });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to load sample data", variant: "destructive" });
-    } finally {
-      setLoadingSample(false);
-    }
+    const sample = samples[index];
+    if (!sample) return;
+    setFormData(sample);
+    setShowNew(true);
+    toast({ title: "Example loaded", description: "Fictional example filled the form. Review or replace it; no AI request or record was created.", variant: "success" });
   };
 
   useEffect(() => {
@@ -377,10 +363,7 @@ export default function SpeechEnhancerPage() {
           <p className="text-muted-foreground">Enhance speech clarity, grammar, and fluency with AI</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadSampleData} disabled={loadingSample}>
-            {loadingSample ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
-            Load Sample Data
-          </Button>
+          <FullFormExamples disabled={processing} onSelect={loadSampleData} />
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" />
             New Enhancement

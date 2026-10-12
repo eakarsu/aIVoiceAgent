@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import FullFormExamples from "@/components/ai/FullFormExamples";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -74,7 +75,6 @@ export default function HearingTestPage() {
     testType: "pure-tone", frequencies: DEFAULT_FREQUENCIES
   });
   const [processing, setProcessing] = useState(false);
-  const [loadingSample, setLoadingSample] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -146,13 +146,12 @@ export default function HearingTestPage() {
     window.open("/api/export/pdf?model=hearing-test", "_blank");
   };
 
-  const loadSampleData = async () => {
-    setLoadingSample(true);
+  const loadSampleData = (index: number) => {
     const samples = [
       {
         title: "Normal Hearing - Annual Checkup",
-        description: "Routine annual hearing checkup with normal results",
-        patientName: "John Smith",
+        description: "Fictional training scenario; values are not clinical evidence.",
+        patientName: "Fictional example — no real patient",
         patientAge: 35,
         testType: "pure-tone",
         frequencies: [
@@ -166,8 +165,8 @@ export default function HearingTestPage() {
       },
       {
         title: "Mild High-Frequency Loss",
-        description: "Patient reporting difficulty hearing in noisy environments",
-        patientName: "Sarah Johnson",
+        description: "Fictional training scenario; values are not clinical evidence.",
+        patientName: "Fictional example — no real patient",
         patientAge: 52,
         testType: "pure-tone",
         frequencies: [
@@ -181,8 +180,8 @@ export default function HearingTestPage() {
       },
       {
         title: "Moderate Bilateral Loss",
-        description: "Follow-up test for hearing aid fitting",
-        patientName: "Robert Davis",
+        description: "Fictional training scenario; values are not clinical evidence.",
+        patientName: "Fictional example — no real patient",
         patientAge: 68,
         testType: "pure-tone",
         frequencies: [
@@ -195,24 +194,11 @@ export default function HearingTestPage() {
         ],
       },
     ];
-    try {
-      const results = await Promise.all(
-        samples.map((sample) =>
-          fetch("/api/ai/hearing-test", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sample),
-          }).then((res) => (res.ok ? res.json() : null))
-        )
-      );
-      const newItems = results.filter(Boolean) as HearingTest[];
-      setItems((prev) => [...newItems.reverse(), ...prev]);
-      toast({ title: "Success", description: "Sample data loaded and processing started", variant: "success" });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to load sample data", variant: "destructive" });
-    } finally {
-      setLoadingSample(false);
-    }
+    const sample = samples[index];
+    if (!sample) return;
+    setFormData({ ...sample, patientAge: String(sample.patientAge), patientName: "Fictional example — no real patient" });
+    setShowNew(true);
+    toast({ title: "Example loaded", description: "Fictional example filled the form. Review or replace it; no AI request or record was created.", variant: "success" });
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -373,10 +359,7 @@ export default function HearingTestPage() {
           <p className="text-muted-foreground">AI-assisted hearing test analysis and recommendations</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadSampleData} disabled={loadingSample}>
-            {loadingSample ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Stethoscope className="h-4 w-4 mr-2" />}
-            Load Sample Data
-          </Button>
+          <FullFormExamples disabled={processing} onSelect={loadSampleData} />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-2" />New Test</Button>
         </div>
       </div>

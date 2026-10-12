@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import FullFormExamples from "@/components/ai/FullFormExamples";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +82,6 @@ export default function TranslatorPage() {
     sourceLanguage: "auto", targetLanguage: "en", category: "general"
   });
   const [processing, setProcessing] = useState(false);
-  const [loadingSample, setLoadingSample] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -153,8 +153,7 @@ export default function TranslatorPage() {
     window.open("/api/export/pdf?model=translator", "_blank");
   };
 
-  const loadSampleData = async () => {
-    setLoadingSample(true);
+  const loadSampleData = (index: number) => {
     const samples = [
       {
         title: "Medical Report Translation",
@@ -181,24 +180,11 @@ export default function TranslatorPage() {
         category: "technical",
       },
     ];
-    try {
-      const results = await Promise.all(
-        samples.map((sample) =>
-          fetch("/api/ai/translator", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sample),
-          }).then((res) => (res.ok ? res.json() : null))
-        )
-      );
-      const newItems = results.filter(Boolean) as LanguageTranslation[];
-      setItems((prev) => [...newItems.reverse(), ...prev]);
-      toast({ title: "Success", description: "Sample data loaded and processing started", variant: "success" });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to load sample data", variant: "destructive" });
-    } finally {
-      setLoadingSample(false);
-    }
+    const sample = samples[index];
+    if (!sample) return;
+    setFormData(sample);
+    setShowNew(true);
+    toast({ title: "Example loaded", description: "Fictional example filled the form. Review or replace it; no AI request or record was created.", variant: "success" });
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -336,10 +322,7 @@ export default function TranslatorPage() {
           <p className="text-muted-foreground">Translate text between languages with AI precision</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadSampleData} disabled={loadingSample}>
-            {loadingSample ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Languages className="h-4 w-4 mr-2" />}
-            Load Sample Data
-          </Button>
+          <FullFormExamples disabled={processing} onSelect={loadSampleData} />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-2" />New Translation</Button>
         </div>
       </div>

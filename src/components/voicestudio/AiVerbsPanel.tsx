@@ -1,5 +1,6 @@
 "use client";
 
+import AIResponseReport from "../AIResponseReport";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,9 +82,7 @@ export function AiVerbsPanel({ endpoint, verbs, contextBody = {} }: AiVerbsPanel
               </div>
             </div>
             {Object.prototype.hasOwnProperty.call(results, verb) && expanded[verb] && (
-              <pre className="p-3 text-xs bg-background overflow-auto max-h-64 whitespace-pre-wrap break-all">
-                {JSON.stringify(results[verb], null, 2)}
-              </pre>
+              <AIResponseReport value={results[verb]}/>
             )}
           </div>
         ))}

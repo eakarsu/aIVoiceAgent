@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import FullFormExamples from "@/components/ai/FullFormExamples";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,6 @@ export default function MultiLanguagePage() {
   const [showEdit, setShowEdit] = useState(false);
   const [formData, setFormData] = useState({ title: "", description: "", inputText: "" });
   const [processing, setProcessing] = useState(false);
-  const [loadingSample, setLoadingSample] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
@@ -128,8 +128,7 @@ export default function MultiLanguagePage() {
     window.open("/api/export/pdf?model=multi-language", "_blank");
   };
 
-  const loadSampleData = async () => {
-    setLoadingSample(true);
+  const loadSampleData = (index: number) => {
     const samples = [
       {
         title: "Spanish Customer Message",
@@ -147,24 +146,11 @@ export default function MultiLanguagePage() {
         inputText: "こんにちは、先日購入した製品について質問があります。マニュアルに記載されている手順通りに設定しましたが、正常に動作しません。サポートチームに確認していただけますか？",
       },
     ];
-    try {
-      const results = await Promise.all(
-        samples.map((sample) =>
-          fetch("/api/ai/multi-language", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(sample),
-          }).then((res) => (res.ok ? res.json() : null))
-        )
-      );
-      const newItems = results.filter(Boolean) as MultiLanguageSupport[];
-      setItems((prev) => [...newItems.reverse(), ...prev]);
-      toast({ title: "Success", description: "Sample data loaded and processing started", variant: "success" });
-    } catch (error) {
-      toast({ title: "Error", description: "Failed to load sample data", variant: "destructive" });
-    } finally {
-      setLoadingSample(false);
-    }
+    const sample = samples[index];
+    if (!sample) return;
+    setFormData(sample);
+    setShowNew(true);
+    toast({ title: "Example loaded", description: "Fictional example filled the form. Review or replace it; no AI request or record was created.", variant: "success" });
   };
 
   useEffect(() => { fetchItems(); }, []);
@@ -296,10 +282,7 @@ export default function MultiLanguagePage() {
           <p className="text-muted-foreground">Detect and analyze languages in text</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={loadSampleData} disabled={loadingSample}>
-            {loadingSample ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Globe className="h-4 w-4 mr-2" />}
-            Load Sample Data
-          </Button>
+          <FullFormExamples disabled={processing} onSelect={loadSampleData} />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-2" />New Detection</Button>
         </div>
       </div>

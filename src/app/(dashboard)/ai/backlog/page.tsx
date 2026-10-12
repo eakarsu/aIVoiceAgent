@@ -6,6 +6,7 @@
 
 "use client";
 
+import AIResponseReport from "../../../../components/AIResponseReport";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,9 +118,7 @@ export default function BacklogAIPage() {
             <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{perfError}</div>
           )}
           {perfResult && (
-            <pre className="text-xs bg-slate-900 text-green-200 p-3 rounded overflow-x-auto">
-              {JSON.stringify(perfResult, null, 2)}
-            </pre>
+            <AIResponseReport value={perfResult}/>
           )}
         </CardContent>
       </Card>
@@ -149,9 +148,7 @@ export default function BacklogAIPage() {
             <div className="text-sm text-red-600 bg-red-50 p-2 rounded">{memError}</div>
           )}
           {memResult && (
-            <pre className="text-xs bg-slate-900 text-green-200 p-3 rounded overflow-x-auto">
-              {JSON.stringify(memResult, null, 2)}
-            </pre>
+            <AIResponseReport value={memResult}/>
           )}
         </CardContent>
       </Card>

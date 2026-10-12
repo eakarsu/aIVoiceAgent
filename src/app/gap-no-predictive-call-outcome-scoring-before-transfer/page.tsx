@@ -1,6 +1,8 @@
 // // === Batch 08 Gaps & Frontend Mounts ===
 // Feature: No predictive call outcome scoring before transfer
 'use client'
+import AIResponseReport from "../../components/AIResponseReport";
+import PromptWorkspaceFields from "../../components/PromptWorkspaceFields";
 import { useState } from 'react'
 
 export default function GapNoPredictiveCallOutcomeScoringBeforeTransferPage() {
@@ -32,8 +34,7 @@ export default function GapNoPredictiveCallOutcomeScoringBeforeTransferPage() {
       </div>
       <form onSubmit={submit} className="border rounded-xl p-5 mb-4 bg-card">
         <label className="block text-sm font-medium mb-1">Input</label>
-        <textarea className="w-full border rounded-lg px-3 py-2 text-sm" rows={6}
-          value={input} onChange={(e) => setInput(e.target.value)} />
+        <PromptWorkspaceFields feature={"No predictive call outcome scoring before transfer"} value={input} onChange={setInput} disabled={loading}/>
         <button type="submit" disabled={loading || !input.trim()} className="mt-3 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium disabled:opacity-50">
           {loading ? 'Running...' : 'Run Feature'}
         </button>
@@ -42,7 +43,7 @@ export default function GapNoPredictiveCallOutcomeScoringBeforeTransferPage() {
       {result && (
         <div className="border rounded-xl p-5 bg-card">
           <h2 className="font-semibold mb-2">Result</h2>
-          <pre className="text-xs bg-muted p-3 rounded overflow-x-auto whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+          <AIResponseReport value={result}/>
         </div>
       )}
     </div>

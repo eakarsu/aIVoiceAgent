@@ -103,7 +103,7 @@ export default function LoginPage() {
             onClick={handleDemoLogin}
           >
             <Sparkles className="h-4 w-4 mr-2" />
-            Auto Fill Demo Credentials
+            Log In as Demo
           </Button>
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
