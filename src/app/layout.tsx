@@ -18,6 +18,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+<script src="/feature-pack/feature-pack.js" defer />
         <Providers>{children}</Providers>
       </body>
     </html>

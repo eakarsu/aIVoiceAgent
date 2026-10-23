@@ -1,0 +1,1 @@
+export default function Wave50cSections({sections}:{sections:{label:string;value:unknown}[]}){return <section aria-label="Details">{sections.map(s=><div key={s.label}><strong>{s.label}:</strong> {s.value===""?"(empty)":String(s.value)}</div>)}</section>;}
